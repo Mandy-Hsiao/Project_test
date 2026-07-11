@@ -1,0 +1,31 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+
+# Virtual environment
+venv/
+.venv/
+
+# Django
+django.sqlite3
+*.log
+
+# Environment variables / passwords
+.env
+
+# ChromaDB local data
+chroma_db/
+*.bin
+chroma.sqlite3
+
+# IDE
+.vscode/
+.idea/
+
+# Windows
+Thumbs.db
+Desktop.ini
+
+# PHP / temporary files
+*.tmp
