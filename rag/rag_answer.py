@@ -1,3 +1,4 @@
+#query要寫try except，避免ChromaDB query失敗導致整個服務崩潰，測試不穩定的問題
 from pathlib import Path
 
 import chromadb
@@ -29,7 +30,7 @@ def get_rag_answer(question: str) -> str:
         return f"無法開啟 SOP 向量資料庫：{exc}"
 
     query_embedding = embed_model.encode([question]).tolist()[0]
-
+#query要寫try except，避免ChromaDB query失敗導致整個服務崩潰，測試不穩定的問題
     result = collection.query(
         query_embeddings=[query_embedding],
         n_results=3
@@ -64,7 +65,12 @@ def get_rag_answer(question: str) -> str:
                 "content": prompt
             }
         ],
-        "stream": False
+        "stream": False,
+        "options": {
+            "temperature": 0,
+            "top_p": 0.1,
+            "seed": 42
+        }
     }
 
     try:
@@ -75,6 +81,7 @@ def get_rag_answer(question: str) -> str:
         )
         response.raise_for_status()
         data = response.json()
+        print("Ollama 回傳資料：", data)  # Debugging line to print the response from Ollama
         return data["message"]["content"].strip()
 
     except requests.RequestException as exc:
