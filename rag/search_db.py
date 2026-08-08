@@ -1,27 +1,46 @@
-import chromadb
-from sentence_transformers import SentenceTransformer
+from pinecone import Pinecone
+import os
+from pathlib import Path
+from dotenv import load_dotenv
 
-# 1. 載入 embedding 模型
-model = SentenceTransformer("BAAI/bge-small-zh-v1.5")
+BASE_DIR = Path(__file__).resolve().parent.parent
+load_dotenv(BASE_DIR / ".env")
 
-# 2. 連接 ChromaDB
-client = chromadb.PersistentClient(path="../chroma_db")
-collection = client.get_collection(name="sop_collection")
+PINECONE_API_KEY = os.getenv("PINECONE_API_KEY")
+INDEX_NAME = os.getenv("PINECONE_INDEX")
+NAMESPACE = os.getenv("PINECONE_NAMESPACE")
 
-# 3. 使用者問題
+pc = Pinecone(
+    api_key=PINECONE_API_KEY
+)
+
+index = pc.Index("sop-ai")
+
+
 question = "VPN不能登入怎麼辦？"
 
-# 4. 問題轉向量
-query_embedding = model.encode([question]).tolist()[0]
 
-# 5. 搜尋最相關 SOP
-results = collection.query(
-    query_embeddings=[query_embedding],
-    n_results=2
+result = index.search(
+    namespace="sop",
+
+    query={
+        "inputs": {
+            "text": question
+        },
+
+        "top_k": 3
+    }
 )
 
 print("問題：", question)
-print("\n找到的 SOP：")
-for doc in results["documents"][0]:
-    print("----")
-    print(doc)
+
+print("\n找到的資料：")
+
+for hit in result.result.hits:
+
+    print("----------------")
+
+    print("Score：", hit.score)
+
+    print("Text：")
+    print(hit.fields["text"])

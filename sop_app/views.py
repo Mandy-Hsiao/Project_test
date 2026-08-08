@@ -4,15 +4,6 @@ from django.shortcuts import render, redirect
 
 from rag.rag_answer import get_rag_answer
 
-from django.shortcuts import render
-
-def home(request):
-    return render(request, "home.html")
-
-def salary(request):
-    return render(request,
-                  "salary_calculator.html")
-
 
 # 暫時存在記憶體；Django 重啟後會清空
 CHAT_STORE = {}
@@ -20,6 +11,10 @@ CHAT_STORE = {}
 
 def home(request):
     return render(request, "home.html")
+
+
+def salary(request):
+    return render(request, "salary_calculator.html")
 
 
 def chatbot(request, theme):
@@ -54,16 +49,17 @@ def chatbot(request, theme):
                 "content": question
             })
 
-            answer = get_rag_answer(question)
+            try:
+                answer = get_rag_answer(question)
+            except Exception as exc:
+                answer = f"抱歉，處理您的問題時發生錯誤：{exc}"
 
             chat_data["messages"].append({
                 "role": "assistant",
                 "content": answer
             })
 
-        return redirect(
-            f"/chatbot/{theme}/?chat_id={chat_id}"
-        )
+        return redirect(f"/chatbot/{theme}/?chat_id={chat_id}")
 
     history = []
 
