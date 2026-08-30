@@ -17,8 +17,7 @@ export async function GET(req: Request) {
     const scope = (searchParams.get('scope') as 'global' | 'department' | 'personal') || 'personal'
     const department = searchParams.get('department') || ''
 
-    // 用一般（受 RLS 保護）的 client 讀取「自己」的角色/部門，
-    // 這一步一定讀得到，因為 RLS 通常允許使用者讀取自己的那一列
+    // 用一般（受 RLS 保護）的 client 讀取「自己」的角色/部門
     const { data: profile, error: profileError } = await supabase
       .from('profiles')
       .select('role, department')
@@ -32,7 +31,7 @@ export async function GET(req: Request) {
     const userRole = (profile?.role as 'admin' | 'manager' | 'user') || 'user'
     const userDept = profile?.department || ''
 
-    // 權限檢查（維持原本邏輯）
+    // 權限檢查
     if (scope === 'global' && userRole !== 'admin') {
       return NextResponse.json({ error: '無全域權限' }, { status: 403 })
     }
@@ -43,11 +42,6 @@ export async function GET(req: Request) {
       return NextResponse.json({ error: '只能查看自己部門' }, { status: 403 })
     }
 
-    // 個人數據：用一般 client 即可（本來就只查自己的資料，最安全）
-    // 部門 / 全域數據：改用 service role client 繞過 RLS
-    // → 因為權限已經在上面用程式碼檢查過了，這裡才允許讀取「其他人」的資料，
-    //   這也是修正「主管後台數據沒有同步」的關鍵：以前用一般 client 查詢，
-    //   RLS 會擋掉主管對部門同仁 profiles / chat_history 的讀取，導致查回來永遠是空的或只有自己。
     const db: any = scope === 'personal' ? supabase : createAdminClient()
 
     let query = db.from('chat_history').select('*')
@@ -57,10 +51,12 @@ export async function GET(req: Request) {
     } else if (scope === 'department') {
       const deptToQuery = department || userDept
       if (deptToQuery) {
+        // 排除 role 為 admin 的使用者，僅納入該部門的主管與一般同仁
         const { data: deptUsers, error: deptUsersError } = await db
           .from('profiles')
           .select('id')
           .eq('department', deptToQuery)
+          .neq('role', 'admin')
 
         if (deptUsersError) {
           console.error('[Analytics API] Department users query error:', deptUsersError)
@@ -128,23 +124,32 @@ const calculateDailyBreakdown = (chats: any[]) => {
 const calculateDepartmentBreakdown = async (chats: any[], supabase: any) => {
   const breakdown: Record<string, number> = {}
 
-  // 批量查詢所有用戶的部門信息
+  // 批量查詢非 admin 用戶的部門信息
   const userIds = [...new Set(chats.map((c: any) => c.user_id))]
   const { data: users } = await supabase
     .from('profiles')
-    .select('id, department')
+    .select('id, department, role')
     .in('id', userIds)
 
-  const userDeptMap = new Map<string, string>(
-    users?.map((u: any) => [u.id, u.department || '未知']) || [],
-  )
-
-  chats.forEach((chat: any) => {
-    const dept = userDeptMap.get(chat.user_id) || '未知'
-    breakdown[dept] = (breakdown[dept] || 0) + 1
+  // 建立對應表（過濾掉 admin）
+  const userDeptMap = new Map<string, string>()
+  users?.forEach((u: any) => {
+    if (u.role !== 'admin') {
+      userDeptMap.set(u.id, u.department || '未知')
+    }
   })
 
-  const total = chats.length
+  let validDeptChatsCount = 0
+  chats.forEach((chat: any) => {
+    // 若該提問者為 admin 則不納入部門分佈計算
+    if (userDeptMap.has(chat.user_id)) {
+      const dept = userDeptMap.get(chat.user_id) || '未知'
+      breakdown[dept] = (breakdown[dept] || 0) + 1
+      validDeptChatsCount++
+    }
+  })
+
+  const total = validDeptChatsCount
   return Object.fromEntries(
     Object.entries(breakdown).map(([dept, count]) => [
       dept,

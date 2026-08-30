@@ -1,4 +1,5 @@
 import { createClient } from '@/utils/supabase/server'
+import { createAdminClient } from '@/utils/supabase/admin'
 import { NextResponse } from 'next/server'
 
 /**
@@ -20,11 +21,15 @@ export async function GET(req: Request) {
     const department = searchParams.get('department') || ''
 
     // 權限檢查
-    const { data: profile } = await supabase
+    const { data: profile, error: profileError } = await supabase
       .from('profiles')
       .select('role, department')
       .eq('id', user.id)
       .single()
+
+    if (profileError) {
+      console.warn('[Analysis API] Profile error:', profileError.message)
+    }
 
     const userRole = profile?.role || 'user'
     const userDept = profile?.department || ''
@@ -35,22 +40,48 @@ export async function GET(req: Request) {
     if (scope === 'department' && userRole !== 'admin' && userRole !== 'manager') {
       return NextResponse.json({ error: '無部門權限' }, { status: 403 })
     }
+    if (scope === 'department' && userRole === 'manager' && department && department !== userDept) {
+      return NextResponse.json({ error: '只能查看自己部門' }, { status: 403 })
+    }
 
-    // 查詢所有提問
-    let query = supabase.from('chat_history').select('*')
+    // 個人數據用一般 client，部門與全域數據使用 admin client 繞過 RLS
+    const db: any = scope === 'personal' ? supabase : createAdminClient()
+
+    // 查詢提問
+    let query = db.from('chat_history').select('*')
 
     if (scope === 'personal') {
       query = query.eq('user_id', user.id)
     } else if (scope === 'department') {
       const deptToQuery = department || userDept
-      const { data: deptUsers } = await supabase
-        .from('profiles')
-        .select('id')
-        .eq('department', deptToQuery)
-      
-      const userIds = deptUsers?.map((u: any) => u.id) || []
-      if (userIds.length > 0) {
-        query = query.in('user_id', userIds)
+      if (deptToQuery) {
+        // 排除 admin 帳號，只統計該部門的主管與員工
+        const { data: deptUsers, error: deptUsersError } = await db
+          .from('profiles')
+          .select('id')
+          .eq('department', deptToQuery)
+          .neq('role', 'admin')
+
+        if (deptUsersError) {
+          console.error('[Analysis API] Department users query error:', deptUsersError)
+        }
+
+        const userIds = deptUsers?.map((u: any) => u.id) || []
+        if (userIds.length > 0) {
+          query = query.in('user_id', userIds)
+        } else {
+          return NextResponse.json({
+            totalQuestions: 0,
+            uniqueQuestions: 0,
+            categories: [],
+            uncategorized: [],
+            summary: {
+              mostCommonCategory: '暫無數據',
+              averageQuestionsPerDay: '0',
+              peakHour: '-- (需時間數據)',
+            },
+          })
+        }
       }
     }
 
@@ -137,7 +168,7 @@ function analyzeQuestions(chats: any[]) {
       category: name,
       count: data.issues.reduce((sum, issue) => sum + issue.count, 0),
       issues: data.issues.slice(0, 5), // 每個分類最多顯示 5 個
-      percentage: 0, // 後續計算
+      percentage: '0',
     }))
     .sort((a, b) => b.count - a.count)
 
