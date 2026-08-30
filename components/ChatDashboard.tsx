@@ -31,16 +31,24 @@ export default function ChatDashboard({
   // 1. 初始化時載入此使用者的歷史提問紀錄
   useEffect(() => {
     async function loadHistory() {
-      if (!userId) return
+      if (!userId) {
+        console.warn('ChatDashboard: 尚未取得 userId，稍後重試')
+        return
+      }
+
       const { data, error } = await supabase
         .from('chat_history')
         .select('*')
+        .eq('user_id', userId)
         .order('created_at', { ascending: false })
 
-      if (!error && data) {
+      if (error) {
+        console.error('載入歷史紀錄失敗 (請檢查 RLS 政策):', error.message)
+      } else if (data) {
         setHistory(data)
       }
     }
+
     loadHistory()
   }, [userId, supabase])
 
@@ -62,14 +70,16 @@ export default function ChatDashboard({
         .select()
         .single()
 
-      if (!error && data) {
-        // 即時將新問題加到左側列表的最上方
+      if (error) {
+        console.error('寫入提問紀錄失敗:', error.message)
+      } else if (data) {
         setHistory((prev) => [data, ...prev])
         setActiveHistoryId(data.id)
       }
+    } else {
+      console.error('無法儲存紀錄：userId 不存在')
     }
 
-    // 目前暫無 AI 模型回答，直接結束 loading
     setIsLoading(false)
   }
 
@@ -79,7 +89,24 @@ export default function ChatDashboard({
     setCurrentQuestion(item.question)
   }
 
-  // 4. 點選開啟新對話
+  // 4. 刪除提問歷史紀錄
+  const handleDeleteHistory = async (e: React.MouseEvent, id: string) => {
+    e.stopPropagation()
+
+    const { error } = await supabase.from('chat_history').delete().eq('id', id)
+
+    if (error) {
+      console.error('刪除紀錄失敗:', error.message)
+    } else {
+      setHistory((prev) => prev.filter((item) => item.id !== id))
+      if (activeHistoryId === id) {
+        setActiveHistoryId(null)
+        setCurrentQuestion('')
+      }
+    }
+  }
+
+  // 5. 點選開啟新對話
   const handleNewChat = () => {
     setActiveHistoryId(null)
     setCurrentQuestion('')
@@ -87,8 +114,8 @@ export default function ChatDashboard({
   }
 
   return (
-    <div className="flex h-screen w-screen overflow-hidden">
-      {/* 左側邊欄：即時顯示歷史提問紀錄與身分資訊 */}
+    <div className="flex h-screen w-screen overflow-hidden bg-slate-900">
+      {/* 左側邊欄 */}
       <Sidebar
         userEmail={userEmail}
         userRole={userRole}
@@ -98,6 +125,7 @@ export default function ChatDashboard({
         history={history}
         activeHistoryId={activeHistoryId}
         onSelectHistory={handleSelectHistory}
+        onDeleteHistory={handleDeleteHistory}
         onNewChat={handleNewChat}
       />
 
@@ -117,7 +145,6 @@ export default function ChatDashboard({
         {/* 聊天與問題呈現區 */}
         <div className="flex-1 overflow-y-auto p-6 space-y-6">
           {!currentQuestion ? (
-            /* 空白歡迎狀態 */
             <div className="max-w-xl mx-auto mt-24 text-center">
               <div className="h-12 w-12 rounded-2xl bg-blue-600 text-white flex items-center justify-center font-bold text-xl mx-auto mb-4 shadow-lg shadow-blue-500/20">
                 SOP
@@ -128,16 +155,13 @@ export default function ChatDashboard({
               </p>
             </div>
           ) : (
-            /* 提問氣泡展示 */
             <div className="max-w-3xl mx-auto space-y-4">
-              {/* 使用者提問 */}
               <div className="flex justify-end">
                 <div className="max-w-[80%] rounded-2xl rounded-tr-none px-4 py-3 text-sm leading-relaxed bg-blue-600 text-white shadow-sm">
                   <p className="whitespace-pre-wrap">{currentQuestion}</p>
                 </div>
               </div>
 
-              {/* 系統提示（待模型串接） */}
               <div className="flex justify-start items-center gap-2 text-xs text-slate-400 py-2">
                 <div className="h-2 w-2 rounded-full bg-slate-400"></div>
                 <span>提問已儲存至歷史紀錄。待 RAG 模型與向量資料庫串接後將自動回覆。</span>

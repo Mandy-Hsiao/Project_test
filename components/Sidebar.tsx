@@ -11,13 +11,14 @@ export interface HistoryItem {
 
 interface SidebarProps {
   userEmail?: string
-  userRole?: 'admin' | 'manager' | 'user'
+  userRole?: 'admin' | 'manager' | 'user' | string
   department?: string
   isAdmin?: boolean
   onSignOut: () => void
   history: HistoryItem[]
   activeHistoryId?: string | null
   onSelectHistory: (item: HistoryItem) => void
+  onDeleteHistory?: (e: React.MouseEvent, id: string) => void
   onNewChat: () => void
 }
 
@@ -30,11 +31,13 @@ export default function Sidebar({
   history,
   activeHistoryId,
   onSelectHistory,
+  onDeleteHistory,
   onNewChat,
 }: SidebarProps) {
-  // 判定身分權限
-  const checkAdmin = isAdmin || userRole === 'admin'
-  const checkManager = userRole === 'manager'
+  // 防呆判定身分權限（轉小寫比對，避免大小寫不一致造成按鈕消失）
+  const normalizedRole = userRole?.toLowerCase() || 'user'
+  const checkAdmin = isAdmin || normalizedRole === 'admin'
+  const checkManager = normalizedRole === 'manager'
   const hasDashboardAccess = checkAdmin || checkManager
 
   // 格式化時間（例如：今天 14:30 或 08/30）
@@ -94,16 +97,44 @@ export default function Sidebar({
                 <div
                   key={item.id}
                   onClick={() => onSelectHistory(item)}
-                  className={`group flex items-center justify-between rounded-lg px-2.5 py-2.5 text-xs cursor-pointer transition ${
+                  className={`group relative flex items-center justify-between rounded-lg px-2.5 py-2.5 text-xs cursor-pointer transition ${
                     activeHistoryId === item.id
                       ? 'bg-blue-600/20 text-blue-300 border border-blue-500/30 font-medium'
                       : 'text-slate-300 hover:bg-slate-800 hover:text-white'
                   }`}
                 >
-                  <span className="truncate pr-2">💬 {item.question}</span>
-                  <span className="text-[10px] text-slate-500 shrink-0">
-                    {formatTime(item.created_at)}
-                  </span>
+                  <span className="truncate pr-12">💬 {item.question}</span>
+
+                  <div className="absolute right-2 flex items-center gap-1.5">
+                    {/* 時間（平常顯示） */}
+                    <span className="text-[10px] text-slate-500 group-hover:hidden">
+                      {formatTime(item.created_at)}
+                    </span>
+
+                    {/* 垃圾桶刪除按鈕（滑鼠懸浮時顯示） */}
+                    {onDeleteHistory && (
+                      <button
+                        title="刪除此紀錄"
+                        onClick={(e) => onDeleteHistory(e, item.id)}
+                        className="hidden group-hover:flex items-center justify-center p-1 rounded text-slate-400 hover:text-red-400 hover:bg-red-500/10 transition"
+                      >
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          className="h-3.5 w-3.5"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                          stroke="currentColor"
+                          strokeWidth={2}
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                          />
+                        </svg>
+                      </button>
+                    )}
+                  </div>
                 </div>
               ))
             )}
