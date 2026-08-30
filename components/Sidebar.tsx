@@ -3,28 +3,50 @@
 import React from 'react'
 import Link from 'next/link'
 
+export interface HistoryItem {
+  id: string
+  question: string
+  created_at: string
+}
+
 interface SidebarProps {
   userEmail?: string
   onSignOut: () => void
   isAdmin?: boolean
+  history: HistoryItem[]
+  activeHistoryId?: string | null
+  onSelectHistory: (item: HistoryItem) => void
+  onNewChat: () => void
 }
 
-export default function Sidebar({ userEmail, onSignOut, isAdmin }: SidebarProps) {
-  const popularPrompts = [
-    '📌 差旅費報支規範與審核流程',
-    '📌 特休與事病假扣薪標準',
-    '📌 資訊資安與外接設備管理規章',
-  ]
-
-  const mockHistory = [
-    { id: '1', title: '婚假天數與證明文件規定', time: '今天' },
-    { id: '2', title: '採購合約審核流程', time: '昨天' },
-    { id: '3', title: '遠端辦公 VPN 連線申請 SOP', time: '過去 7 天' },
-  ]
+export default function Sidebar({
+  userEmail,
+  onSignOut,
+  isAdmin,
+  history,
+  activeHistoryId,
+  onSelectHistory,
+  onNewChat,
+}: SidebarProps) {
+  // 格式化時間（例如：今天 14:30 或 08/30）
+  const formatTime = (dateStr: string) => {
+    try {
+      const d = new Date(dateStr)
+      const now = new Date()
+      if (d.toDateString() === now.toDateString()) {
+        return d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+      }
+      return `${d.getMonth() + 1}/${d.getDate()}`
+    } catch {
+      return ''
+    }
+  }
 
   return (
     <aside className="w-72 bg-slate-900 text-slate-200 flex flex-col justify-between border-r border-slate-800 select-none">
+      {/* 上半部：Logo 與歷史清單 */}
       <div className="p-4 flex flex-col h-full overflow-hidden">
+        {/* 系統標題 */}
         <div className="flex items-center gap-2 mb-4 px-2">
           <div className="h-8 w-8 rounded-lg bg-blue-600 flex items-center justify-center font-bold text-white shadow-md">
             SOP
@@ -35,49 +57,52 @@ export default function Sidebar({ userEmail, onSignOut, isAdmin }: SidebarProps)
           </div>
         </div>
 
+        {/* 開啟新對話按鈕 */}
         <button
-          onClick={() => window.location.reload()}
+          onClick={onNewChat}
           className="w-full flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl bg-blue-600 hover:bg-blue-500 text-white text-xs font-semibold shadow-sm transition active:scale-[0.98]"
         >
           <span>+</span> 開啟新對話
         </button>
 
-        <div className="mt-5">
-          <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider px-2">
-            熱門 SOP 快捷引導
-          </span>
-          <div className="mt-2 space-y-1">
-            {popularPrompts.map((prompt, idx) => (
-              <button
-                key={idx}
-                className="w-full text-left truncate rounded-lg px-2.5 py-1.5 text-xs text-slate-300 hover:bg-slate-800 hover:text-white transition"
-              >
-                {prompt}
-              </button>
-            ))}
-          </div>
-        </div>
-
+        {/* 歷史提問紀錄清單 */}
         <div className="mt-5 flex-1 flex flex-col overflow-hidden">
-          <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider px-2 mb-2">
-            歷史提問紀錄
-          </span>
+          <div className="flex items-center justify-between px-2 mb-2">
+            <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">
+              提問歷史紀錄
+            </span>
+            <span className="text-[10px] text-slate-500">{history.length} 則</span>
+          </div>
+
           <div className="flex-1 overflow-y-auto space-y-1 pr-1 custom-scrollbar">
-            {mockHistory.map((item) => (
-              <div
-                key={item.id}
-                className="group flex items-center justify-between rounded-lg px-2.5 py-2 text-xs text-slate-300 hover:bg-slate-800 hover:text-white cursor-pointer transition"
-              >
-                <span className="truncate"> {item.title}</span>
-                <span className="text-[10px] text-slate-400 group-hover:text-slate-300">
-                  {item.time}
-                </span>
+            {history.length === 0 ? (
+              <div className="text-center py-10 text-xs text-slate-500">
+                尚無提問紀錄<br />
+                <span className="text-[10px] text-slate-600">在右側發問後將自動儲存</span>
               </div>
-            ))}
+            ) : (
+              history.map((item) => (
+                <div
+                  key={item.id}
+                  onClick={() => onSelectHistory(item)}
+                  className={`group flex items-center justify-between rounded-lg px-2.5 py-2.5 text-xs cursor-pointer transition ${
+                    activeHistoryId === item.id
+                      ? 'bg-blue-600/20 text-blue-300 border border-blue-500/30 font-medium'
+                      : 'text-slate-300 hover:bg-slate-800 hover:text-white'
+                  }`}
+                >
+                  <span className="truncate pr-2">💬 {item.question}</span>
+                  <span className="text-[10px] text-slate-500 shrink-0">
+                    {formatTime(item.created_at)}
+                  </span>
+                </div>
+              ))
+            )}
           </div>
         </div>
       </div>
 
+      {/* 下半部：管理員入口 + 個人資訊與登出 */}
       <div className="p-3 border-t border-slate-800 bg-slate-950/60 flex flex-col gap-2">
         {isAdmin && (
           <Link

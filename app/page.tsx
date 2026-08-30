@@ -1,7 +1,6 @@
 import { createClient } from '@/utils/supabase/server'
 import { signout } from './login/actions'
-import Sidebar from '@/components/Sidebar'
-import ChatContainer from '@/components/ChatContainer'
+import ChatDashboard from '@/components/ChatDashboard'
 
 export default async function HomePage() {
   const supabase = await createClient()
@@ -21,9 +20,11 @@ export default async function HomePage() {
   }
 
   return (
-    <div className="flex h-screen w-screen overflow-hidden">
-      <Sidebar userEmail={user?.email} onSignOut={signout} isAdmin={isAdmin} />
-      <ChatContainer />
-    </div>
+    <ChatDashboard
+      userEmail={user?.email}
+      userId={user?.id}
+      isAdmin={isAdmin}
+      onSignOut={signout}
+    />
   )
 }
