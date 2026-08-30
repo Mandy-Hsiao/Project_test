@@ -38,7 +38,9 @@ export default function Sidebar({
   const normalizedRole = userRole?.toLowerCase() || 'user'
   const checkAdmin = isAdmin || normalizedRole === 'admin'
   const checkManager = normalizedRole === 'manager'
-  const hasDashboardAccess = checkAdmin || checkManager
+  // 所有登入者（員工 / 主管 / 管理員）都能進入後台，
+  // 差別只在於後台頁面裡看得到哪些頁籤（員工只會看到「個人歷史」）
+  const hasDashboardAccess = true
 
   // 格式化時間（例如：今天 14:30 或 08/30）
   const formatTime = (dateStr: string) => {
@@ -142,7 +144,7 @@ export default function Sidebar({
         </div>
       </div>
 
-      {/* 下半部：後台入口（管理員/主管）+ 個人資訊與登出 */}
+      {/* 下半部：後台入口（員工/主管/管理員皆可進入，內容依角色不同）+ 個人資訊與登出 */}
       <div className="p-3 border-t border-slate-800 bg-slate-950/60 flex flex-col gap-2">
         {hasDashboardAccess && (
           <Link
@@ -150,21 +152,31 @@ export default function Sidebar({
             className={`w-full flex items-center justify-between rounded-lg px-3 py-2 text-xs font-medium border transition shadow-sm ${
               checkAdmin
                 ? 'text-amber-300 bg-amber-500/10 border-amber-500/20 hover:bg-amber-500/20'
-                : 'text-emerald-300 bg-emerald-500/10 border-emerald-500/20 hover:bg-emerald-500/20'
+                : checkManager
+                  ? 'text-emerald-300 bg-emerald-500/10 border-emerald-500/20 hover:bg-emerald-500/20'
+                  : 'text-blue-300 bg-blue-500/10 border-blue-500/20 hover:bg-blue-500/20'
             }`}
           >
             <span className="flex items-center gap-2">
               <span>📊</span>
-              <span>{checkAdmin ? '全系統管理後台' : `${department || '部門'}數據後台`}</span>
+              <span>
+                {checkAdmin
+                  ? '全系統管理後台'
+                  : checkManager
+                    ? `${department || '部門'}數據後台`
+                    : '我的提問歷史後台'}
+              </span>
             </span>
             <span
               className={`text-[10px] px-1.5 py-0.5 rounded font-mono ${
                 checkAdmin
                   ? 'bg-amber-500/30 text-amber-200'
-                  : 'bg-emerald-500/30 text-emerald-200'
+                  : checkManager
+                    ? 'bg-emerald-500/30 text-emerald-200'
+                    : 'bg-blue-500/30 text-blue-200'
               }`}
             >
-              {checkAdmin ? 'Admin' : 'Manager'}
+              {checkAdmin ? 'Admin' : checkManager ? 'Manager' : 'User'}
             </span>
           </Link>
         )}
