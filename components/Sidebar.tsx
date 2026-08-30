@@ -68,7 +68,7 @@ export default function Sidebar({ userEmail, onSignOut, isAdmin }: SidebarProps)
                 key={item.id}
                 className="group flex items-center justify-between rounded-lg px-2.5 py-2 text-xs text-slate-300 hover:bg-slate-800 hover:text-white cursor-pointer transition"
               >
-                <span className="truncate">💬 {item.title}</span>
+                <span className="truncate"> {item.title}</span>
                 <span className="text-[10px] text-slate-400 group-hover:text-slate-300">
                   {item.time}
                 </span>
