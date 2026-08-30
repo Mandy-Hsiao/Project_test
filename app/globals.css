@@ -24,3 +24,18 @@ body {
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
+
+/* 加深所有輸入框的外框顏色 */
+input[type="text"],
+input[type="email"],
+input[type="password"] {
+  border: 1.5px solid #475468 !important; /* slate-400 深灰色邊框 */
+}
+
+/* 當滑鼠點擊輸入框時的聚焦高亮 */
+input[type="text"]:focus,
+input[type="email"]:focus,
+input[type="password"]:focus {
+  border-color: #264484 !important;
+  outline: none;
+}

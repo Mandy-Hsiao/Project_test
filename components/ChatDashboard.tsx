@@ -7,6 +7,8 @@ import Sidebar, { HistoryItem } from './Sidebar'
 interface ChatDashboardProps {
   userEmail?: string
   userId?: string
+  userRole?: 'admin' | 'manager' | 'user'
+  department?: string
   isAdmin?: boolean
   onSignOut: () => void
 }
@@ -14,6 +16,8 @@ interface ChatDashboardProps {
 export default function ChatDashboard({
   userEmail,
   userId,
+  userRole = 'user',
+  department = '',
   isAdmin,
   onSignOut,
 }: ChatDashboardProps) {
@@ -84,11 +88,13 @@ export default function ChatDashboard({
 
   return (
     <div className="flex h-screen w-screen overflow-hidden">
-      {/* 左側邊欄：即時顯示歷史提問紀錄 */}
+      {/* 左側邊欄：即時顯示歷史提問紀錄與身分資訊 */}
       <Sidebar
         userEmail={userEmail}
-        onSignOut={onSignOut}
+        userRole={userRole}
+        department={department}
         isAdmin={isAdmin}
+        onSignOut={onSignOut}
         history={history}
         activeHistoryId={activeHistoryId}
         onSelectHistory={handleSelectHistory}

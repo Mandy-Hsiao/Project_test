@@ -11,8 +11,10 @@ export interface HistoryItem {
 
 interface SidebarProps {
   userEmail?: string
-  onSignOut: () => void
+  userRole?: 'admin' | 'manager' | 'user'
+  department?: string
   isAdmin?: boolean
+  onSignOut: () => void
   history: HistoryItem[]
   activeHistoryId?: string | null
   onSelectHistory: (item: HistoryItem) => void
@@ -21,13 +23,20 @@ interface SidebarProps {
 
 export default function Sidebar({
   userEmail,
-  onSignOut,
+  userRole = 'user',
+  department = '',
   isAdmin,
+  onSignOut,
   history,
   activeHistoryId,
   onSelectHistory,
   onNewChat,
 }: SidebarProps) {
+  // 判定身分權限
+  const checkAdmin = isAdmin || userRole === 'admin'
+  const checkManager = userRole === 'manager'
+  const hasDashboardAccess = checkAdmin || checkManager
+
   // 格式化時間（例如：今天 14:30 或 08/30）
   const formatTime = (dateStr: string) => {
     try {
@@ -102,19 +111,29 @@ export default function Sidebar({
         </div>
       </div>
 
-      {/* 下半部：管理員入口 + 個人資訊與登出 */}
+      {/* 下半部：後台入口（管理員/主管）+ 個人資訊與登出 */}
       <div className="p-3 border-t border-slate-800 bg-slate-950/60 flex flex-col gap-2">
-        {isAdmin && (
+        {hasDashboardAccess && (
           <Link
             href="/admin"
-            className="w-full flex items-center justify-between rounded-lg px-3 py-2 text-xs font-medium text-amber-300 bg-amber-500/10 border border-amber-500/20 hover:bg-amber-500/20 transition shadow-sm"
+            className={`w-full flex items-center justify-between rounded-lg px-3 py-2 text-xs font-medium border transition shadow-sm ${
+              checkAdmin
+                ? 'text-amber-300 bg-amber-500/10 border-amber-500/20 hover:bg-amber-500/20'
+                : 'text-emerald-300 bg-emerald-500/10 border-emerald-500/20 hover:bg-emerald-500/20'
+            }`}
           >
             <span className="flex items-center gap-2">
               <span>📊</span>
-              <span>管理端數據分析後台</span>
+              <span>{checkAdmin ? '全系統管理後台' : `${department || '部門'}數據後台`}</span>
             </span>
-            <span className="text-[10px] bg-amber-500/30 text-amber-200 px-1.5 py-0.5 rounded font-mono">
-              Admin
+            <span
+              className={`text-[10px] px-1.5 py-0.5 rounded font-mono ${
+                checkAdmin
+                  ? 'bg-amber-500/30 text-amber-200'
+                  : 'bg-emerald-500/30 text-emerald-200'
+              }`}
+            >
+              {checkAdmin ? 'Admin' : 'Manager'}
             </span>
           </Link>
         )}
@@ -122,13 +141,22 @@ export default function Sidebar({
         <div className="flex items-center justify-between pt-2 border-t border-slate-800/80 px-1">
           <div className="flex items-center gap-2 truncate max-w-[170px]">
             <div
-              className={`h-6 w-6 rounded-full flex items-center justify-center text-[10px] font-bold ${
-                isAdmin ? 'bg-amber-500/20 text-amber-400' : 'bg-blue-500/20 text-blue-400'
+              className={`h-6 w-6 rounded-full flex items-center justify-center text-[10px] font-bold shrink-0 ${
+                checkAdmin
+                  ? 'bg-amber-500/20 text-amber-400'
+                  : checkManager
+                  ? 'bg-emerald-500/20 text-emerald-400'
+                  : 'bg-blue-500/20 text-blue-400'
               }`}
             >
-              {isAdmin ? 'A' : 'U'}
+              {checkAdmin ? 'A' : checkManager ? 'M' : 'U'}
             </div>
-            <span className="text-xs text-slate-300 truncate">{userEmail || '使用者'}</span>
+            <div className="flex flex-col truncate">
+              <span className="text-xs text-slate-300 truncate">{userEmail || '使用者'}</span>
+              {department && (
+                <span className="text-[10px] text-slate-500 truncate">{department}</span>
+              )}
+            </div>
           </div>
           <button
             onClick={onSignOut}

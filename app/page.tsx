@@ -8,22 +8,30 @@ export default async function HomePage() {
     data: { user },
   } = await supabase.auth.getUser()
 
-  let isAdmin = false
+  let userRole: 'admin' | 'manager' | 'user' = 'user'
+  let department = ''
+
   if (user) {
+    // 同時查詢角色與部門資訊
     const { data: profile } = await supabase
       .from('profiles')
-      .select('role')
+      .select('role, department')
       .eq('id', user.id)
       .single()
 
-    isAdmin = profile?.role === 'admin'
+    if (profile) {
+      userRole = (profile.role as 'admin' | 'manager' | 'user') || 'user'
+      department = profile.department || '一般部門'
+    }
   }
 
   return (
     <ChatDashboard
       userEmail={user?.email}
       userId={user?.id}
-      isAdmin={isAdmin}
+      userRole={userRole}
+      department={department}
+      isAdmin={userRole === 'admin'}
       onSignOut={signout}
     />
   )
