@@ -47,7 +47,6 @@ export default function ChatContainer() {
       <header className="h-14 bg-white border-b border-slate-200 px-6 flex items-center justify-between shadow-sm">
         <div className="flex items-center gap-2 text-xs font-medium text-slate-600">
           <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse"></span>
-          <span>RAG 檢索就緒 (Azure OpenAI + Supabase)</span>
         </div>
       </header>
 
