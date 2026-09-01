@@ -1,5 +1,5 @@
 #query要寫try except，避免ChromaDB query失敗導致整個服務崩潰，測試不穩定的問題
-import requests
+'''import requests
 from pinecone import Pinecone
 
 # =========================
@@ -18,8 +18,14 @@ INDEX_NAME = os.getenv("PINECONE_INDEX")
 NAMESPACE = os.getenv("PINECONE_NAMESPACE")
 
 OLLAMA_URL = os.getenv("OLLAMA_URL")
-MODEL_NAME = os.getenv("OLLAMA_MODEL")
+MODEL_NAME = os.getenv("OLLAMA_MODEL")'''
 
+
+def get_rag_answer(question: str) -> str:
+    return f"API 已成功收到問題：{question}"
+
+
+'''
 pc = Pinecone(
     api_key=PINECONE_API_KEY
 )
@@ -160,3 +166,4 @@ SOP：
     response.raise_for_status()
 
     return response.json()["message"]["content"].strip()
+    '''
