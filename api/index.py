@@ -1,3 +1,19 @@
+from fastapi import FastAPI
+
+app = FastAPI()
+
+@app.get("/")
+def root():
+    return {
+        "status": "ok",
+        "message": "SOP RAG API is running"
+    }
+
+
+
+
+'''
+
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel, Field
 
@@ -46,3 +62,5 @@ def chat(request: ChatRequest):
             status_code=500,
             detail="系統暫時無法處理問題。",
         )
+        
+        '''
