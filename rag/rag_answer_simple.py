@@ -1,32 +1,26 @@
 import os
+from pathlib import Path
+
+from dotenv import load_dotenv
+from google import genai
 
 from fastapi import FastAPI
 from pydantic import BaseModel
-from google import genai
 
 
 # =========================================================
-# 1. FastAPI
+# 1. 載入 .env
 # =========================================================
 
-app = FastAPI(
-    title="SOP AI API",
-    description="Gemini API 測試版本",
-    version="1.0.0"
-)
+BASE_DIR = Path(__file__).resolve().parent.parent
+load_dotenv(BASE_DIR / ".env")
 
 
 # =========================================================
-# 2. Gemini API Key
+# 2. 讀取 Gemini API Key
 # =========================================================
 
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
-
-
-if not GEMINI_API_KEY:
-    raise RuntimeError(
-        "找不到 GEMINI_API_KEY，請至 Vercel Environment Variables 設定。"
-    )
 
 
 # =========================================================
@@ -39,7 +33,14 @@ gemini_client = genai.Client(
 
 
 # =========================================================
-# 4. Request Model
+# 4. FastAPI
+# =========================================================
+
+app = FastAPI()
+
+
+# =========================================================
+# 5. 接收前端傳來的 JSON
 # =========================================================
 
 class QuestionRequest(BaseModel):
@@ -47,10 +48,10 @@ class QuestionRequest(BaseModel):
 
 
 # =========================================================
-# 5. Gemini
+# 6. 直接詢問 Gemini
 # =========================================================
 
-def ask_gemini(question: str) -> str:
+def get_rag_answer(question: str) -> str:
 
     question = question.strip()
 
@@ -98,26 +99,26 @@ def ask_gemini(question: str) -> str:
 
 
 # =========================================================
-# 6. 首頁
+# 7. FastAPI Chat API
 # =========================================================
 
-@app.get("/api")
-def home():
-    return {
-        "message": "SOP AI API is running"
-    }
-
-
-# =========================================================
-# 7. Chat API
-# =========================================================
-
-@app.post("/api/chat")
+@app.post("/chat")
 def chat(data: QuestionRequest):
 
-    answer = ask_gemini(data.question)
+    answer = get_rag_answer(data.question)
 
     return {
         "answer": answer
     }
 
+
+# =========================================================
+# 8. 測試首頁
+# =========================================================
+
+@app.get("/")
+def home():
+
+    return {
+        "message": "SOP AI API is running"
+    }
