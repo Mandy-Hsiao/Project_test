@@ -25,6 +25,8 @@ export default function ChatDashboard({
   const [history, setHistory] = useState<HistoryItem[]>([])
   const [activeHistoryId, setActiveHistoryId] = useState<string | null>(null)
   const [currentQuestion, setCurrentQuestion] = useState<string>('')
+  const [currentAnswer, setCurrentAnswer] = useState<string>('')
+  const [errorMessage, setErrorMessage] = useState<string>('')
   const [input, setInput] = useState('')
   const [isLoading, setIsLoading] = useState(false)
 
@@ -59,6 +61,8 @@ export default function ChatDashboard({
     const questionText = input.trim()
     setInput('')
     setCurrentQuestion(questionText)
+    setCurrentAnswer('')
+    setErrorMessage('')
     setActiveHistoryId(null)
     setIsLoading(true)
 
@@ -80,13 +84,35 @@ export default function ChatDashboard({
       console.error('無法儲存紀錄：userId 不存在')
     }
 
-    setIsLoading(false)
+    // 呼叫後端 Chat API 取得回答
+    try {
+      const res = await fetch('/api/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ question: questionText }),
+      })
+
+      const data = await res.json()
+
+      if (!res.ok) {
+        throw new Error(data.error || '取得回答失敗')
+      }
+
+      setCurrentAnswer(data.answer)
+    } catch (error: any) {
+      console.error('呼叫 Chat API 失敗:', error)
+      setErrorMessage(error.message || '無法取得回答，請稍後再試。')
+    } finally {
+      setIsLoading(false)
+    }
   }
 
   // 3. 點選左側歷史紀錄
   const handleSelectHistory = (item: HistoryItem) => {
     setActiveHistoryId(item.id)
     setCurrentQuestion(item.question)
+    setCurrentAnswer('')
+    setErrorMessage('')
   }
 
   // 4. 刪除提問歷史紀錄
@@ -102,6 +128,7 @@ export default function ChatDashboard({
       if (activeHistoryId === id) {
         setActiveHistoryId(null)
         setCurrentQuestion('')
+        setCurrentAnswer('')
       }
     }
   }
@@ -110,6 +137,8 @@ export default function ChatDashboard({
   const handleNewChat = () => {
     setActiveHistoryId(null)
     setCurrentQuestion('')
+    setCurrentAnswer('')
+    setErrorMessage('')
     setInput('')
   }
 
@@ -162,10 +191,31 @@ export default function ChatDashboard({
                 </div>
               </div>
 
-              <div className="flex justify-start items-center gap-2 text-xs text-slate-400 py-2">
-                <div className="h-2 w-2 rounded-full bg-slate-400"></div>
-                <span>提問已儲存至歷史紀錄。待 RAG 模型與向量資料庫串接後將自動回覆。</span>
-              </div>
+              {isLoading && (
+                <div className="flex gap-3 items-center text-xs text-slate-400">
+                  <div className="h-2 w-2 rounded-full bg-blue-600 animate-ping"></div>
+                  正在思考中...
+                </div>
+              )}
+
+              {!isLoading && currentAnswer && (
+                <div className="flex gap-3 justify-start">
+                  <div className="h-8 w-8 rounded-lg bg-blue-600 text-white text-xs font-bold flex items-center justify-center shrink-0">
+                    SOP
+                  </div>
+                  <div className="max-w-[80%] rounded-2xl rounded-tl-none px-4 py-3 text-sm leading-relaxed shadow-sm bg-white text-slate-800 border border-slate-200">
+                    <p className="whitespace-pre-wrap">{currentAnswer}</p>
+                  </div>
+                </div>
+              )}
+
+              {!isLoading && errorMessage && (
+                <div className="flex gap-3 justify-start">
+                  <div className="max-w-[80%] rounded-2xl rounded-tl-none px-4 py-3 text-sm leading-relaxed shadow-sm bg-red-50 text-red-600 border border-red-200">
+                    <p>{errorMessage}</p>
+                  </div>
+                </div>
+              )}
             </div>
           )}
         </div>
