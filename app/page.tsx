@@ -15,7 +15,7 @@ export default async function HomePage() {
     // 同時查詢角色與部門資訊
     const { data: profile } = await supabase
       .from('profiles')
-      .select('role, department')
+      .select('role, department, em_name')
       .eq('id', user.id)
       .single()
 
