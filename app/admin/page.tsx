@@ -25,6 +25,7 @@ export default async function AdminDashboardPage() {
 
   const role = (profile?.role as 'admin' | 'manager' | 'user' | 'resigned') || 'user'
   const department = profile?.department || '未分配部門'
+  const employeeName = profile?.em_name || ''
 
   // 2. 資安防護：已離職人員直接踢出後台
   if (role === 'resigned') {
@@ -34,7 +35,7 @@ export default async function AdminDashboardPage() {
   const isAdmin = role === 'admin'
   const isManager = role === 'manager'
 
-  // 3. 依角色權限抓取同仁名單（實作 ③ 權限分級檢視）
+  // 3. 依角色權限抓取同仁名單（權限分級檢視）
   let membersQuery = supabase
     .from('profiles')
     .select('id, email, em_name, role, department, created_at')
@@ -58,7 +59,8 @@ export default async function AdminDashboardPage() {
       isManager={isManager}
       department={department}
       userRole={role}
-      initialMembers={members || []} 
+      employeeName={employeeName}
+      initialMembers={members || []}
     />
   )
 }

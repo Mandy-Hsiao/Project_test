@@ -16,7 +16,7 @@ interface AdminUserManagementProps {
   isAdmin: boolean
   isManager: boolean
   currentDepartment: string
-  initialMembers?: ProfileItem[] // 👈 補上此型別宣告，解決上一層傳遞時的報錯
+  initialMembers?: ProfileItem[]
 }
 
 // 預設可選擇的部門清單
@@ -26,16 +26,15 @@ export default function AdminUserManagement({
   isAdmin,
   isManager,
   currentDepartment,
-  initialMembers = [], // 👈 預設為空陣列
+  initialMembers = [],
 }: AdminUserManagementProps) {
   const supabase = createClient()
-  // 以伺服器傳入的名單作為初始值；若已有名單則不需進入載入中狀態
   const [members, setMembers] = useState<ProfileItem[]>(initialMembers)
   const [loading, setLoading] = useState<boolean>(initialMembers.length === 0)
   const [savingId, setSavingId] = useState<string | null>(null)
   const [deptFilter, setDeptFilter] = useState<string>('all')
 
-  // 1. 若伺服器端未帶入資料，則由前端客戶端補抓（③ 名單分級）
+  // 1. 若伺服器端未帶入資料，由前端客戶端補抓
   useEffect(() => {
     if (initialMembers.length === 0) {
       fetchMembers()
@@ -46,7 +45,6 @@ export default function AdminUserManagement({
     setLoading(true)
     let query = supabase.from('profiles').select('*').order('created_at', { ascending: true })
 
-    // 若為主管，強制只抓取所屬部門名單
     if (isManager && !isAdmin) {
       query = query.eq('department', currentDepartment)
     }
@@ -58,7 +56,7 @@ export default function AdminUserManagement({
     setLoading(false)
   }
 
-  // 2. 更新同仁資料（④ 角色/離職、⑤ 部門、⑥ 姓名）
+  // 2. 更新同仁資料
   const handleUpdate = async (id: string, updates: Partial<ProfileItem>) => {
     setSavingId(id)
 
@@ -102,11 +100,13 @@ export default function AdminUserManagement({
             <select
               value={deptFilter}
               onChange={(e) => setDeptFilter(e.target.value)}
-              className="bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-slate-200 focus:outline-none focus:border-emerald-500"
+              className="bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-slate-200 focus:outline-none focus:border-emerald-500 [&>option]:bg-slate-900 [&>option]:text-slate-100"
             >
-              <option value="all">全公司部門 (全部)</option>
+              <option value="all" className="bg-slate-900 text-slate-100">
+                全公司部門 (全部)
+              </option>
               {DEPARTMENT_OPTIONS.map((dept) => (
-                <option key={dept} value={dept}>
+                <option key={dept} value={dept} className="bg-slate-900 text-slate-100">
                   {dept}
                 </option>
               ))}
@@ -165,17 +165,17 @@ export default function AdminUserManagement({
                         value={member.department || '一般部門'}
                         disabled={!isAdmin && isManager}
                         onChange={(e) => handleUpdate(member.id, { department: e.target.value })}
-                        className="bg-slate-900 border border-slate-700 rounded px-2 py-1 text-slate-200 focus:outline-none focus:border-emerald-500 disabled:opacity-50"
+                        className="bg-slate-900 border border-slate-700 rounded px-2 py-1 text-slate-200 focus:outline-none focus:border-emerald-500 disabled:opacity-50 [&>option]:bg-slate-900 [&>option]:text-slate-100"
                       >
                         {DEPARTMENT_OPTIONS.map((dept) => (
-                          <option key={dept} value={dept}>
+                          <option key={dept} value={dept} className="bg-slate-900 text-slate-100 py-1">
                             {dept}
                           </option>
                         ))}
                       </select>
                     </td>
 
-                    {/* ④ 角色維護（包含已離職 resigned） */}
+                    {/* ④ 角色維護（加入 [&>option] 強制實心深色底色與高對比字體） */}
                     <td className="py-3 px-4">
                       <select
                         value={member.role}
@@ -184,7 +184,7 @@ export default function AdminUserManagement({
                             role: e.target.value as 'admin' | 'manager' | 'user' | 'resigned',
                           })
                         }
-                        className={`rounded px-2.5 py-1 text-xs font-medium border focus:outline-none ${
+                        className={`rounded px-2.5 py-1 text-xs font-medium border focus:outline-none [&>option]:bg-slate-900 [&>option]:text-slate-100 ${
                           member.role === 'admin'
                             ? 'bg-purple-900/30 text-purple-300 border-purple-700'
                             : member.role === 'manager'
@@ -194,10 +194,18 @@ export default function AdminUserManagement({
                                 : 'bg-slate-800 text-slate-300 border-slate-700'
                         }`}
                       >
-                        <option value="user">一般同仁 (User)</option>
-                        <option value="manager">部門主管 (Manager)</option>
-                        <option value="admin">最高管理員 (Admin)</option>
-                        <option value="resigned">🚫 已離職 (Resigned)</option>
+                        <option value="user" className="bg-slate-900 text-slate-200 py-1">
+                          一般同仁 (User)
+                        </option>
+                        <option value="manager" className="bg-slate-900 text-emerald-400 font-medium py-1">
+                          部門主管 (Manager)
+                        </option>
+                        <option value="admin" className="bg-slate-900 text-amber-400 font-medium py-1">
+                          最高管理員 (Admin)
+                        </option>
+                        <option value="resigned" className="bg-slate-900 text-rose-400 font-semibold py-1">
+                          🚫 已離職 (Resigned)
+                        </option>
                       </select>
                     </td>
 

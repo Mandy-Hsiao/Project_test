@@ -3,6 +3,7 @@
 import React, { useState, useEffect, useRef } from 'react'
 import { createClient } from '@/utils/supabase/client'
 import Sidebar, { HistoryItem } from './Sidebar'
+import UploadDocumentModal from './UploadDocumentModal'
 
 interface ChatDashboardProps {
   userEmail?: string
@@ -34,13 +35,16 @@ export default function ChatDashboard({
 }: ChatDashboardProps) {
   const supabase = createClient()
 
-  // 狀態管理
+  // 討論串與訊息狀態管理
   const [threads, setThreads] = useState<HistoryItem[]>([])
   const [activeThreadId, setActiveThreadId] = useState<string | null>(null)
   const [messages, setMessages] = useState<MessageItem[]>([])
   const [input, setInput] = useState('')
   const [isLoading, setIsLoading] = useState(false)
   const [errorMessage, setErrorMessage] = useState('')
+
+  // 👈 新增：控制「員工 SOP 文件上傳彈窗」開關狀態
+  const [isUploadOpen, setIsUploadOpen] = useState(false)
 
   const messagesEndRef = useRef<HTMLDivElement>(null)
 
@@ -116,7 +120,8 @@ export default function ChatDashboard({
 
       // B. 如果是「新對話」（尚未有 thread_id），先在 Supabase 建立討論串
       if (!currentThreadId && userId) {
-        const defaultTitle = questionText.length > 15 ? questionText.slice(0, 15) + '...' : questionText
+        const defaultTitle =
+          questionText.length > 15 ? questionText.slice(0, 15) + '...' : questionText
         const { data: threadData, error: threadErr } = await supabase
           .from('threads')
           .insert([
@@ -130,9 +135,9 @@ export default function ChatDashboard({
           .single()
 
         if (threadErr || !threadData) {
-  console.error('Supabase 建立 thread 失敗原因:', threadErr)
-  throw new Error(threadErr?.message || '建立討論串失敗，請稍後再試')
-}
+          console.error('Supabase 建立 thread 失敗原因:', threadErr)
+          throw new Error(threadErr?.message || '建立討論串失敗，請稍後再試')
+        }
 
         currentThreadId = threadData.id
         setActiveThreadId(currentThreadId)
@@ -220,7 +225,7 @@ export default function ChatDashboard({
     }
   }
 
-  // 4. 訊息評分（Rating 👍 / 👎）
+  // 4. 訊息評分（Rating 👍 / 👎）[cite: 4]
   const handleRate = async (messageId: string, ratingValue: number) => {
     const target = messages.find((m) => m.id === messageId)
     const newRating = target?.rating === ratingValue ? null : ratingValue
@@ -295,6 +300,7 @@ export default function ChatDashboard({
         onDeleteHistory={handleDeleteHistory}
         onRenameHistory={handleRenameHistory}
         onNewChat={handleNewChat}
+        onOpenUploadModal={() => setIsUploadOpen(true)} // 👈 綁定開啟員工上傳 SOP 彈窗
       />
 
       {/* 右側主對話區 */}
@@ -311,7 +317,7 @@ export default function ChatDashboard({
             )}
           </div>
           <div className="text-xs text-slate-400">
-            <span>兆豐證券資訊部助教</span>
+            <span>兆豐證券資訊部助教</span>[cite: 4, 5]
           </div>
         </header>
 
@@ -322,7 +328,7 @@ export default function ChatDashboard({
               <div className="h-12 w-12 rounded-2xl bg-blue-600 text-white flex items-center justify-center font-bold text-xl mx-auto mb-4 shadow-lg shadow-blue-500/20">
                 SOP
               </div>
-              <h2 className="text-xl font-bold text-slate-800">歡迎使用 SOP 智能知識庫</h2>
+              <h2 className="text-xl font-bold text-slate-800">歡迎使用 SOP 智能知識庫</h2>[cite: 4, 5]
               <p className="mt-2 text-sm text-slate-500">
                 請在下方輸入問題，系統將自動為您開啟討論串並保留上下文記憶。
               </p>
@@ -349,7 +355,7 @@ export default function ChatDashboard({
                           <p className="whitespace-pre-wrap">{msg.content}</p>
                         </div>
 
-                        {/* Rating 評分按鈕（綁定該訊息 ID） */}
+                        {/* Rating 評分按鈕（綁定該訊息 ID）[cite: 4] */}
                         {msg.id && (
                           <div className="flex items-center gap-3 px-1">
                             <span className="text-[11px] text-slate-400">這個回答有幫助嗎？</span>
@@ -439,6 +445,15 @@ export default function ChatDashboard({
           </div>
         </div>
       </main>
+
+      {/* 👈 新增：一般員工 SOP 知識文件上傳與管理彈窗 */}
+      <UploadDocumentModal
+        isOpen={isUploadOpen}
+        onClose={() => setIsUploadOpen(false)}
+        userId={userId}
+        department={department}
+        employeeName={employeeName}
+      />
     </div>
   )
 }

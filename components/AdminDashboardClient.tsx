@@ -3,15 +3,18 @@
 import React, { useState } from 'react'
 import AnalyticsPanel from '@/components/AnalyticsPanel'
 import AdminUserManagement from '@/components/AdminUserManagement'
+import ManagerReviewCenter from '@/components/ManagerReviewCenter'
+import AdminDocumentRepository from '@/components/AdminDocumentRepository'
 import Link from 'next/link'
 
 interface AdminDashboardClientProps {
-  user: { email?: string }
+  user: { id?: string; email?: string }
   isAdmin: boolean
   isManager?: boolean
   department: string
   userRole: 'admin' | 'manager' | 'user'
-  initialMembers?: any[] // 接收伺服器端傳來的同仁名單，解決報錯
+  employeeName?: string
+  initialMembers?: any[] // 接收伺服器端傳來的同仁名單
 }
 
 export default function AdminDashboardClient({
@@ -20,15 +23,17 @@ export default function AdminDashboardClient({
   isManager = false,
   department,
   userRole,
+  employeeName = '',
   initialMembers = [],
 }: AdminDashboardClientProps) {
-  const [activeTab, setActiveTab] = useState<'global' | 'department' | 'personal' | 'users'>(
+  // 依身分決定預設呈現的分頁
+  const [activeTab, setActiveTab] = useState<'global' | 'department' | 'personal' | 'users' | 'review'>(
     isAdmin ? 'global' : isManager ? 'department' : 'personal',
   )
 
-  // ③ 角色分級頁籤：主管 (Manager) 也能查看本部門同仁名單
+  // 角色分級頁籤：整合數據分析、同仁名單與 SOP 審核中心
   const tabs: Array<{
-    id: 'global' | 'department' | 'personal' | 'users'
+    id: 'global' | 'department' | 'personal' | 'users' | 'review'
     label: string
     visible: boolean
   }> = [
@@ -38,6 +43,12 @@ export default function AdminDashboardClient({
     {
       id: 'users',
       label: isAdmin ? '全域用戶管理' : '部門同仁名單',
+      visible: isAdmin || isManager,
+    },
+    // 主管與管理員專屬的知識庫文件審核/原文件庫分頁
+    {
+      id: 'review',
+      label: isAdmin ? ' 知識庫原文件庫' : ' 部門 SOP 審核中心',
       visible: isAdmin || isManager,
     },
   ]
@@ -60,7 +71,9 @@ export default function AdminDashboardClient({
                   ? `【${department}】部門數據分析`
                   : '我的提問歷史後台'}
             </h1>
-            <p className="text-xs text-slate-400">{roleLabel}視圖</p>
+            <p className="text-xs text-slate-400">
+              {roleLabel}視圖 {employeeName ? `· ${employeeName}` : ''}
+            </p>
           </div>
         </div>
         <div className="flex items-center gap-3 text-xs">
@@ -76,12 +89,12 @@ export default function AdminDashboardClient({
 
       {/* Tab 導航列 */}
       <div className="border-b border-slate-800 bg-slate-900 px-6">
-        <div className="flex gap-1">
+        <div className="flex gap-1 overflow-x-auto">
           {visibleTabs.map((tab) => (
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
-              className={`px-4 py-2.5 text-sm font-medium transition border-b-2 ${
+              className={`px-4 py-2.5 text-sm font-medium transition border-b-2 whitespace-nowrap ${
                 activeTab === tab.id
                   ? 'border-emerald-500 text-emerald-400'
                   : 'border-transparent text-slate-400 hover:text-slate-300'
@@ -102,6 +115,17 @@ export default function AdminDashboardClient({
             currentDepartment={department}
             initialMembers={initialMembers}
           />
+        ) : activeTab === 'review' ? (
+          /* 判斷：總管理員渲染全公司原文件庫；部門主管渲染審核中心 */
+          isAdmin ? (
+            <AdminDocumentRepository adminId={user.id || ''} />
+          ) : (
+            <ManagerReviewCenter
+              managerDepartment={department}
+              managerId={user.id || ''}
+              managerRole={userRole}
+            />
+          )
         ) : (
           <AnalyticsPanel
             scope={activeTab as 'global' | 'department' | 'personal'}

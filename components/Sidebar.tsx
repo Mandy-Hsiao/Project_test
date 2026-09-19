@@ -22,8 +22,9 @@ interface SidebarProps {
   activeHistoryId?: string | null
   onSelectHistory: (item: HistoryItem) => void
   onDeleteHistory?: (e: React.MouseEvent, id: string) => void
-  onRenameHistory?: (id: string, newTitle: string) => Promise<void> // 👈 新增更名函式
+  onRenameHistory?: (id: string, newTitle: string) => Promise<void>
   onNewChat: () => void
+  onOpenUploadModal?: () => void // 👈 開啟上傳文件彈窗
 }
 
 export default function Sidebar({
@@ -39,6 +40,7 @@ export default function Sidebar({
   onDeleteHistory,
   onRenameHistory,
   onNewChat,
+  onOpenUploadModal,
 }: SidebarProps) {
   // 編輯中的狀態管理
   const [editingId, setEditingId] = useState<string | null>(null)
@@ -87,7 +89,7 @@ export default function Sidebar({
 
   return (
     <aside className="w-72 bg-slate-900 text-slate-200 flex flex-col justify-between border-r border-slate-800 select-none">
-      {/* 上半部：Logo 與歷史清單 */}
+      {/* 上半部：Logo、開啟新對話與討論串歷史清單 */}
       <div className="p-4 flex flex-col h-full overflow-hidden">
         {/* 系統標題 */}
         <div className="flex items-center gap-2 mb-4 px-2">
@@ -189,7 +191,7 @@ export default function Sidebar({
                           {formatTime(item.created_at)}
                         </span>
 
-                        {/* 編輯名稱按鈕（滑鼠懸浮時出現） */}
+                        {/* 編輯名稱按鈕 */}
                         {onRenameHistory && (
                           <button
                             title="編輯名稱"
@@ -213,7 +215,7 @@ export default function Sidebar({
                           </button>
                         )}
 
-                        {/* 垃圾桶刪除按鈕（滑鼠懸浮時出現） */}
+                        {/* 刪除按鈕 */}
                         {onDeleteHistory && (
                           <button
                             title="刪除此紀錄"
@@ -246,8 +248,9 @@ export default function Sidebar({
         </div>
       </div>
 
-      {/* 下半部：後台入口 + 個人資訊名牌 */}
+      {/* 下半部：後台入口 + 📤 上傳 SOP 文件按鈕 + 個人資訊名牌 */}
       <div className="p-3 border-t border-slate-800 bg-slate-950/60 flex flex-col gap-2">
+        {/* 1. 後台入口按鈕 */}
         {hasDashboardAccess && (
           <Link
             href="/admin"
@@ -283,6 +286,23 @@ export default function Sidebar({
           </Link>
         )}
 
+        {/* 2. 📤 上傳 SOP 文件按鈕（移至後台入口按鈕正下方） */}
+        {onOpenUploadModal && (
+          <button
+            onClick={onOpenUploadModal}
+            className="w-full flex items-center justify-between rounded-lg px-3 py-2 text-xs font-medium border border-slate-700/80 bg-slate-800/60 hover:bg-slate-800 text-slate-200 hover:text-white transition shadow-sm active:scale-[0.98]"
+          >
+            <span className="flex items-center gap-2">
+              <span>📤</span>
+              <span>上傳 SOP 知識文件</span>
+            </span>
+            <span className="text-[10px] bg-blue-600/30 text-blue-300 border border-blue-500/30 px-1.5 py-0.5 rounded font-mono">
+              Upload
+            </span>
+          </button>
+        )}
+
+        {/* 3. 使用者名牌與登出 */}
         <div className="flex items-center justify-between pt-2 border-t border-slate-800/80 px-1">
           <div className="flex items-center gap-2 truncate max-w-[170px]">
             <div
