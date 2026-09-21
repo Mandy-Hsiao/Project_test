@@ -225,7 +225,7 @@ export default function ChatDashboard({
     }
   }
 
-  // 4. 訊息評分（Rating 👍 / 👎）[cite: 4]
+  // 4. 訊息評分（Rating 👍 / 👎）
   const handleRate = async (messageId: string, ratingValue: number) => {
     const target = messages.find((m) => m.id === messageId)
     const newRating = target?.rating === ratingValue ? null : ratingValue
@@ -317,7 +317,7 @@ export default function ChatDashboard({
             )}
           </div>
           <div className="text-xs text-slate-400">
-            <span>兆豐證券資訊部助教</span>[cite: 4, 5]
+            <span>兆豐證券資訊部助教</span>
           </div>
         </header>
 
@@ -328,7 +328,7 @@ export default function ChatDashboard({
               <div className="h-12 w-12 rounded-2xl bg-blue-600 text-white flex items-center justify-center font-bold text-xl mx-auto mb-4 shadow-lg shadow-blue-500/20">
                 SOP
               </div>
-              <h2 className="text-xl font-bold text-slate-800">歡迎使用 SOP 智能知識庫</h2>[cite: 4, 5]
+              <h2 className="text-xl font-bold text-slate-800">歡迎使用 SOP 智能知識庫</h2>
               <p className="mt-2 text-sm text-slate-500">
                 請在下方輸入問題，系統將自動為您開啟討論串並保留上下文記憶。
               </p>
@@ -355,7 +355,7 @@ export default function ChatDashboard({
                           <p className="whitespace-pre-wrap">{msg.content}</p>
                         </div>
 
-                        {/* Rating 評分按鈕（綁定該訊息 ID）[cite: 4] */}
+                        {/* Rating 評分按鈕（綁定該訊息 ID）*/}
                         {msg.id && (
                           <div className="flex items-center gap-3 px-1">
                             <span className="text-[11px] text-slate-400">這個回答有幫助嗎？</span>
