@@ -288,18 +288,18 @@ export default function Sidebar({
 
         {/* 2. 📤 上傳 SOP 文件按鈕（移至後台入口按鈕正下方） */}
         {onOpenUploadModal && (
-          <button
-            onClick={onOpenUploadModal}
-            className="w-full flex items-center justify-between rounded-lg px-3 py-2 text-xs font-medium border border-slate-700/80 bg-slate-800/60 hover:bg-slate-800 text-slate-200 hover:text-white transition shadow-sm active:scale-[0.98]"
-          >
-            <span className="flex items-center gap-2">
-              <span>📤</span>
-              <span>上傳 SOP 知識文件</span>
-            </span>
-            <span className="text-[10px] bg-blue-600/30 text-blue-300 border border-blue-500/30 px-1.5 py-0.5 rounded font-mono">
-              Upload
-            </span>
-          </button>
+      <button
+        onClick={onOpenUploadModal}
+        className="w-full flex items-center justify-between rounded-lg px-3 py-2 text-xs bg-sky-500/20 hover:bg-sky-500/30 border border-sky-400/50 text-sky-200 transition shadow-sm"
+>
+      <div className="flex items-center gap-2">
+        <span className="text-base">📤</span>
+        <span className="text-xs font-medium text-sky-100">上傳 SOP 知識文件</span>
+      </div>
+      <span className="text-[10px] px-2 py-0.5 rounded-md bg-sky-400 text-slate-900 font-bold">
+        Upload
+      </span>
+      </button>
         )}
 
         {/* 3. 使用者名牌與登出 */}
