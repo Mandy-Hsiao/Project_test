@@ -1,8 +1,13 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: #f7f9fc;
+  --foreground: #263247;
+  --megabank-burgundy: #8f1d4e;
+  --megabank-burgundy-dark: #74143e;
+  --megabank-burgundy-light: #b34370;
+  --megabank-gold: #c79a32;
+  --megabank-gold-light: #e8cf83;
 }
 
 @theme inline {
@@ -12,17 +17,110 @@
   --font-mono: var(--font-geist-mono);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+html[data-theme='dark'] {
+  --background: #120718;
+  --foreground: #f5eaf3;
+}
+
+html[data-theme='light'] {
+  --background: #f7f9fc;
+  --foreground: #263247;
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
+}
+
+/*
+ * 兆豐品牌色：保留原有 Tailwind class 與元件行為，只將既有藍色
+ * 介面色彩映射為紫紅色，並將圖表中的 cyan 強調色映射為金色。
+ */
+@layer utilities {
+  .bg-blue-600 {
+    background-color: var(--megabank-burgundy) !important;
+  }
+
+  .bg-blue-500 {
+    background-color: var(--megabank-burgundy-light) !important;
+  }
+
+  .bg-blue-500\/10 {
+    background-color: color-mix(in srgb, var(--megabank-burgundy) 10%, transparent) !important;
+  }
+
+  .bg-blue-500\/20 {
+    background-color: color-mix(in srgb, var(--megabank-burgundy) 20%, transparent) !important;
+  }
+
+  .bg-blue-600\/20 {
+    background-color: color-mix(in srgb, var(--megabank-burgundy) 20%, transparent) !important;
+  }
+
+  .bg-blue-50,
+  .bg-blue-50\/50 {
+    background-color: color-mix(in srgb, var(--megabank-burgundy) 5%, white) !important;
+  }
+
+  .text-blue-600,
+  .text-blue-700 {
+    color: var(--megabank-burgundy) !important;
+  }
+
+  .text-blue-300,
+  .text-blue-400 {
+    color: var(--megabank-burgundy-light) !important;
+  }
+
+  .text-blue-900 {
+    color: var(--megabank-burgundy-dark) !important;
+  }
+
+  .border-blue-600,
+  .border-blue-500 {
+    border-color: var(--megabank-burgundy) !important;
+  }
+
+  .border-blue-500\/30 {
+    border-color: color-mix(in srgb, var(--megabank-burgundy) 30%, transparent) !important;
+  }
+
+  .focus\:border-blue-500:focus {
+    border-color: var(--megabank-burgundy) !important;
+  }
+
+  .focus\:ring-blue-500:focus {
+    --tw-ring-color: var(--megabank-burgundy) !important;
+  }
+
+  .focus\:ring-blue-100:focus {
+    --tw-ring-color: color-mix(in srgb, var(--megabank-burgundy) 15%, transparent) !important;
+  }
+
+  .hover\:bg-blue-500:hover {
+    background-color: var(--megabank-burgundy-light) !important;
+  }
+
+  .hover\:bg-blue-700:hover {
+    background-color: var(--megabank-burgundy-dark) !important;
+  }
+
+  .hover\:bg-blue-100:hover {
+    background-color: color-mix(in srgb, var(--megabank-burgundy) 10%, white) !important;
+  }
+
+  .hover\:text-blue-400:hover {
+    color: var(--megabank-burgundy-light) !important;
+  }
+
+  .to-cyan-400 {
+    --tw-gradient-to: var(--megabank-gold) var(--tw-gradient-to-position) !important;
+  }
+
+  .shadow-blue-500\/20 {
+    --tw-shadow-color: color-mix(in srgb, var(--megabank-burgundy) 20%, transparent) !important;
+  }
 }
 
 /* 加深所有輸入框的外框顏色 */
@@ -36,6 +134,267 @@ input[type="password"] {
 input[type="text"]:focus,
 input[type="email"]:focus,
 input[type="password"]:focus {
-  border-color: #264484 !important;
+  border-color: var(--megabank-burgundy) !important;
   outline: none;
+}
+
+/* Reference palette: clean blue-white light mode and deep plum dark mode. */
+html[data-theme='light'] .bg-slate-900 {
+  background-color: #f2f5f9 !important;
+}
+
+html[data-theme='light'] .bg-slate-950,
+html[data-theme='light'] .bg-slate-950\/60 {
+  background-color: #e8edf4 !important;
+}
+
+html[data-theme='light'] .bg-slate-800 {
+  background-color: #e5eaf1 !important;
+}
+
+html[data-theme='light'] .text-slate-200,
+html[data-theme='light'] .text-slate-300,
+html[data-theme='light'] aside .text-white {
+  color: #263247 !important;
+}
+
+html[data-theme='light'] aside .bg-blue-600.text-white {
+  color: #ffffff !important;
+}
+
+html[data-theme='light'] .text-slate-400 {
+  color: #617087 !important;
+}
+
+html[data-theme='light'] .text-slate-500,
+html[data-theme='light'] .text-slate-600 {
+  color: #8190a5 !important;
+}
+
+html[data-theme='light'] .border-slate-800,
+html[data-theme='light'] .border-slate-800\/80,
+html[data-theme='light'] .border-slate-700 {
+  border-color: #d6dee9 !important;
+}
+
+/* The light sidebar follows the warm ivory tone from the supplied reference. */
+html[data-theme='light'] aside.bg-slate-900 {
+  background-color: #f8f5ef !important;
+}
+
+html[data-theme='light'] aside .bg-slate-950,
+html[data-theme='light'] aside .bg-slate-950\/60 {
+  background-color: #f8f5ef !important;
+}
+
+html[data-theme='light'] aside .bg-slate-900\/40 {
+  background-color: #f8f5ef !important;
+}
+
+html[data-theme='light'] aside .bg-slate-800 {
+  background-color: #ebe7df !important;
+}
+
+html[data-theme='light'] aside .border-slate-800,
+html[data-theme='light'] aside .border-slate-800\/80,
+html[data-theme='light'] aside .border-slate-700 {
+  border-color: #e3ded4 !important;
+}
+
+/* Light-mode sidebar actions mirror the white cards in the supplied reference. */
+html[data-theme='light'] aside .sidebar-action {
+  background-color: #ffffff !important;
+  border-color: #e5dfd5 !important;
+  color: #2f2430 !important;
+  box-shadow: 0 1px 4px rgb(77 61 45 / 10%) !important;
+}
+
+html[data-theme='light'] aside .sidebar-action:hover {
+  background-color: #fffdf9 !important;
+  border-color: #d8cdbd !important;
+}
+
+html[data-theme='light'] aside .sidebar-action-icon {
+  display: inline-flex;
+  width: 1.75rem;
+  height: 1.75rem;
+  align-items: center;
+  justify-content: center;
+  border-radius: 0.4rem;
+  background-color: #fff5e4 !important;
+  color: #d8902f !important;
+}
+
+html[data-theme='light'] aside .sidebar-upload-action .sidebar-action-icon {
+  background-color: #e7f6fc !important;
+  color: #1398c4 !important;
+}
+
+html[data-theme='light'] aside .sidebar-action-label {
+  color: #2f2430 !important;
+}
+
+html[data-theme='light'] aside .sidebar-action-badge {
+  background-color: #fbf1d9 !important;
+  border: 1px solid #ead49d !important;
+  color: #987326 !important;
+}
+
+/* Match the supplied dark sidebar reference: a uniform deep plum surface. */
+html[data-theme='dark'] aside.bg-slate-900 {
+  background-color: #230a22 !important;
+}
+
+html[data-theme='dark'] aside .bg-slate-950,
+html[data-theme='dark'] aside .bg-slate-950\/60,
+html[data-theme='dark'] aside .bg-slate-900\/40 {
+  background-color: #230a22 !important;
+}
+
+html[data-theme='dark'] aside .border-slate-800,
+html[data-theme='dark'] aside .border-slate-800\/80 {
+  border-color: #3d1638 !important;
+}
+
+/* Dark-mode sidebar actions use the plum cards and gold accents from the reference. */
+html[data-theme='dark'] aside .sidebar-action {
+  background-color: #1d1322 !important;
+  border-color: #5a4323 !important;
+  color: #f4eaf2 !important;
+  box-shadow: 0 2px 8px rgb(0 0 0 / 22%) !important;
+}
+
+html[data-theme='dark'] aside .sidebar-action:hover {
+  background-color: #28182d !important;
+  border-color: #7b5b2a !important;
+}
+
+html[data-theme='dark'] aside .sidebar-action-icon {
+  display: inline-flex;
+  width: 1.75rem;
+  height: 1.75rem;
+  align-items: center;
+  justify-content: center;
+  border-radius: 0.45rem;
+  background-color: #38251b !important;
+  color: #f7c84b !important;
+}
+
+html[data-theme='dark'] aside .sidebar-upload-action .sidebar-action-icon {
+  background-color: #102f49 !important;
+  color: #67c7fa !important;
+}
+
+html[data-theme='dark'] aside .sidebar-action-label {
+  color: #f4eaf2 !important;
+}
+
+html[data-theme='dark'] aside .sidebar-action-badge {
+  background-color: #3a2b20 !important;
+  border: 1px solid #84652b !important;
+  color: #f5cf63 !important;
+}
+
+.theme-toggle-button {
+  display: inline-flex;
+  width: 3.5rem;
+  height: 3.5rem;
+  flex: 0 0 3.5rem;
+  align-items: center;
+  justify-content: center;
+  border-radius: 0.9rem;
+  border: 1px solid;
+  font-size: 1.65rem;
+  line-height: 1;
+  transition: background-color 150ms ease, border-color 150ms ease, color 150ms ease,
+    box-shadow 150ms ease, transform 150ms ease;
+}
+
+.theme-toggle-button:hover {
+  transform: translateY(-1px);
+}
+
+.theme-toggle-button:active {
+  transform: translateY(0);
+}
+
+html[data-theme='light'] .theme-toggle-light {
+  background-color: #ffffff;
+  border-color: #ead49d;
+  color: #e99400;
+  box-shadow: 0 1px 4px rgb(77 61 45 / 8%);
+}
+
+html[data-theme='light'] .theme-toggle-light:hover {
+  background-color: #fffaf0;
+  border-color: #d9b95e;
+}
+
+html[data-theme='dark'] .theme-toggle-dark {
+  background-color: #1d1322;
+  border-color: #84652b;
+  color: #f5cf63;
+  box-shadow: 0 2px 8px rgb(0 0 0 / 22%);
+}
+
+html[data-theme='dark'] .theme-toggle-dark:hover {
+  background-color: #28182d;
+  border-color: #a17a32;
+}
+
+html[data-theme='dark'] .bg-slate-50 {
+  background-color: #170a1c !important;
+}
+
+html[data-theme='dark'] .bg-white {
+  background-color: #211126 !important;
+}
+
+html[data-theme='dark'] .bg-slate-100 {
+  background-color: #2b1630 !important;
+}
+
+html[data-theme='dark'] .bg-slate-300 {
+  background-color: #56415d !important;
+}
+
+html[data-theme='dark'] .text-slate-800 {
+  color: #f2e8f2 !important;
+}
+
+html[data-theme='dark'] .text-slate-700 {
+  color: #dfcfe0 !important;
+}
+
+html[data-theme='dark'] .text-slate-500,
+html[data-theme='dark'] .text-slate-400 {
+  color: #b39bb7 !important;
+}
+
+html[data-theme='dark'] .text-slate-300,
+html[data-theme='dark'] .text-slate-200 {
+  color: #eadceb !important;
+}
+
+html[data-theme='dark'] .border-slate-200,
+html[data-theme='dark'] .border-slate-300 {
+  border-color: #3d2643 !important;
+}
+
+html[data-theme='dark'] input[type='text'] {
+  background-color: #211126 !important;
+  color: #f2e8f2 !important;
+}
+
+html[data-theme='dark'] input::placeholder {
+  color: #9d84a2;
+}
+
+html[data-theme='dark'] .hover\:bg-slate-100:hover {
+  background-color: #34203a !important;
+}
+
+html[data-theme='dark'] .hover\:bg-slate-700:hover,
+html[data-theme='dark'] .hover\:bg-slate-800:hover {
+  background-color: #3a2040 !important;
 }

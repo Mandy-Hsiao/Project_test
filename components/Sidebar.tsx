@@ -254,7 +254,7 @@ export default function Sidebar({
         {hasDashboardAccess && (
           <Link
             href="/admin"
-            className={`w-full flex items-center justify-between rounded-lg px-3 py-2 text-xs font-medium border transition shadow-sm ${
+            className={`sidebar-action sidebar-admin-action w-full flex items-center justify-between rounded-lg px-3 py-2 text-xs font-medium border transition shadow-sm ${
               checkAdmin
                 ? 'text-amber-300 bg-amber-500/10 border-amber-500/20 hover:bg-amber-500/20'
                 : checkManager
@@ -263,8 +263,8 @@ export default function Sidebar({
             }`}
           >
             <span className="flex items-center gap-2">
-              <span>📊</span>
-              <span>
+              <span className="sidebar-action-icon">📊</span>
+              <span className="sidebar-action-label">
                 {checkAdmin
                   ? '全系統管理後台'
                   : checkManager
@@ -273,7 +273,7 @@ export default function Sidebar({
               </span>
             </span>
             <span
-              className={`text-[10px] px-1.5 py-0.5 rounded font-mono ${
+              className={`sidebar-action-badge text-[10px] px-1.5 py-0.5 rounded font-mono ${
                 checkAdmin
                   ? 'bg-amber-500/30 text-amber-200'
                   : checkManager
@@ -290,13 +290,13 @@ export default function Sidebar({
         {onOpenUploadModal && (
       <button
         onClick={onOpenUploadModal}
-        className="w-full flex items-center justify-between rounded-lg px-3 py-2 text-xs bg-sky-500/20 hover:bg-sky-500/30 border border-sky-400/50 text-sky-200 transition shadow-sm"
+        className="sidebar-action sidebar-upload-action w-full flex items-center justify-between rounded-lg px-3 py-2 text-xs bg-sky-500/20 hover:bg-sky-500/30 border border-sky-400/50 text-sky-200 transition shadow-sm"
 >
       <div className="flex items-center gap-2">
-        <span className="text-base">📤</span>
-        <span className="text-xs font-medium text-sky-100">上傳 SOP 知識文件</span>
+        <span className="sidebar-action-icon text-base">📤</span>
+        <span className="sidebar-action-label text-xs font-medium text-sky-100">上傳 SOP 知識文件</span>
       </div>
-      <span className="text-[10px] px-2 py-0.5 rounded-md bg-sky-400 text-slate-900 font-bold">
+      <span className="sidebar-action-badge text-[10px] px-2 py-0.5 rounded-md bg-sky-400 text-slate-900 font-bold">
         Upload
       </span>
       </button>

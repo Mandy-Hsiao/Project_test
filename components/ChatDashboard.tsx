@@ -4,6 +4,7 @@ import React, { useState, useEffect, useRef } from 'react'
 import { createClient } from '@/utils/supabase/client'
 import Sidebar, { HistoryItem } from './Sidebar'
 import UploadDocumentModal from './UploadDocumentModal'
+import { useTheme } from './ThemeProvider'
 
 interface ChatDashboardProps {
   userEmail?: string
@@ -34,6 +35,7 @@ export default function ChatDashboard({
   onSignOut,
 }: ChatDashboardProps) {
   const supabase = createClient()
+  const { theme, toggleTheme } = useTheme()
 
   // 討論串與訊息狀態管理
   const [threads, setThreads] = useState<HistoryItem[]>([])
@@ -419,8 +421,8 @@ export default function ChatDashboard({
 
         {/* 底部輸入框 */}
         <div className="p-4 bg-white border-t border-slate-200">
-          <div className="max-w-3xl mx-auto">
-            <div className="relative flex items-center">
+          <div className="max-w-4xl mx-auto flex items-center gap-3">
+            <div className="relative flex min-w-0 flex-1 items-center">
               <input
                 type="text"
                 value={input}
@@ -442,6 +444,16 @@ export default function ChatDashboard({
                 發送
               </button>
             </div>
+            <button
+              type="button"
+              onClick={toggleTheme}
+              suppressHydrationWarning
+              aria-label={`切換至${theme === 'light' ? '深色' : '淺色'}模式`}
+              title={theme === 'light' ? '切換至深色模式' : '切換至淺色模式'}
+              className={`theme-toggle-button ${theme === 'light' ? 'theme-toggle-light' : 'theme-toggle-dark'}`}
+            >
+              <span aria-hidden="true">{theme === 'light' ? '☾' : '☼'}</span>
+            </button>
           </div>
         </div>
       </main>
