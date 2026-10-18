@@ -1,11 +1,12 @@
+from fastapi.middleware.cors import CORSMiddleware
 import os
 from pathlib import Path
 from dotenv import load_dotenv
-from fastapi import FastAPI
+from fastapi import FastAPI,HTTPException
 from pydantic import BaseModel
 from google import genai
 
-from rag.rag_answer_simple import get_rag_answer
+from rag.rag_answer import get_rag_answer
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 ENV_PATH = BASE_DIR / ".env"
@@ -27,6 +28,52 @@ app = FastAPI(
     version="1.0.0"
 )
 
+
+# 允許 Next.js 前端呼叫
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=[
+        "http://localhost:3000",
+        "http://127.0.0.1:3000",
+        # 正式部署後，加入 Next.js 前端網址
+    ],
+    allow_credentials=False,
+    allow_methods=["POST", "OPTIONS"],
+    allow_headers=["Content-Type"],
+)
+
+class ChatRequest(BaseModel):
+    question: str
+
+
+@app.get("/")
+def home():
+    return {
+        "status": "ok",
+        "message": "SOP RAG API is running"
+    }
+
+
+@app.post("/api/chat")
+def chat(request: ChatRequest):
+
+    try:
+        result = get_rag_answer(request.question)
+
+        if isinstance(result, dict):
+            return result
+
+        return {
+            "answer": str(result)
+        }
+
+    except Exception as e:
+        print("RAG Error:", e)
+
+        raise HTTPException(
+            status_code=500,
+            detail="RAG 回答產生失敗"
+        )
 
 # =========================================================
 # 2. Gemini API Key
