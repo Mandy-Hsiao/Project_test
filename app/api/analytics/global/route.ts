@@ -26,20 +26,27 @@ export async function GET(req: Request) {
   try {
     const { data: chats, error } = await supabase
       .from('chat_history')
-      .select('id, question, created_at, profiles(department, role)', {
+      .select('id, user_id, question, created_at, profiles(department, role)', {
         count: 'exact',
       })
       .order('created_at', { ascending: false })
 
     if (error) throw error
 
+    const normalizedChats = (chats ?? []).map((chat) => ({
+      ...chat,
+      profiles: Array.isArray(chat.profiles)
+        ? (chat.profiles[0] ?? null)
+        : chat.profiles,
+    }))
+
     const stats = {
-      totalQuestions: chats?.length || 0,
-      uniqueUsers: new Set(chats?.map((c) => c.user_id)).size,
-      departmentBreakdown: analyzeDepartments(chats || []),
-      frequentIssues: extractIssueCategories(chats || []),
-      dailyTrend: calculateTrend(chats || []),
-      anomalies: detectAnomalies(chats || []),
+      totalQuestions: normalizedChats.length,
+      uniqueUsers: new Set(normalizedChats.map((c) => c.user_id)).size,
+      departmentBreakdown: analyzeDepartments(normalizedChats),
+      frequentIssues: extractIssueCategories(normalizedChats),
+      dailyTrend: calculateTrend(normalizedChats),
+      anomalies: detectAnomalies(normalizedChats),
     }
 
     return NextResponse.json(stats)
@@ -62,7 +69,7 @@ function analyzeDepartments(
   return Object.fromEntries(
     Object.entries(breakdown).map(([dept, count]) => [
       dept,
-      { count, percentage: ((count / total) * 100).toFixed(1) },
+      { count, percentage: Number(((count / total) * 100).toFixed(1)) },
     ]),
   )
 }
@@ -119,7 +126,11 @@ function calculateTrend(
 function detectAnomalies(
   chats: Array<{ created_at: string; user_id: string }>,
 ): Array<{ type: string; description: string; severity: 'low' | 'medium' | 'high' }> {
-  const anomalies = []
+  const anomalies: Array<{
+    type: string
+    description: string
+    severity: 'low' | 'medium' | 'high'
+  }> = []
 
   // 異常 1: 單一用戶短時間內大量提問
   const userCounts: Record<string, number> = {}
@@ -137,7 +148,7 @@ function detectAnomalies(
 
   anomalies.push(...suspicious)
 
-  // 異常 2: 系統錯誤率高
+  // 異常 2: 過去 24 小時提問量偏高
   const last24h = new Date(Date.now() - 24 * 60 * 60 * 1000)
   const recentErrors = chats.filter(
     (c) => new Date(c.created_at) > last24h,
