@@ -119,18 +119,18 @@ export default function ChatDashboard({
 
     try {
       let currentThreadId = activeThreadId
+      let isNewThread = false
 
       // B. 如果是「新對話」（尚未有 thread_id），先在 Supabase 建立討論串
       if (!currentThreadId && userId) {
-        const defaultTitle =
-          questionText.length > 15 ? questionText.slice(0, 15) + '...' : questionText
+        const pendingTitle = '新對話'
         const { data: threadData, error: threadErr } = await supabase
           .from('threads')
           .insert([
             {
               user_id: userId,
               department: department || '未分配部門',
-              title: defaultTitle,
+              title: pendingTitle,
             },
           ])
           .select()
@@ -142,6 +142,7 @@ export default function ChatDashboard({
         }
 
         currentThreadId = threadData.id
+        isNewThread = true
         setActiveThreadId(currentThreadId)
 
         // 同步更新側邊欄討論串清單
@@ -168,14 +169,8 @@ export default function ChatDashboard({
         content: m.content,
       }))
       
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL
-
-        if (!apiUrl) {
-          throw new Error('尚未設定 NEXT_PUBLIC_API_URL')
-        }
-
       // E. 呼叫 /api/chat 取得 AI 回答
-      const res = await fetch(`${apiUrl.replace(/\/$/, '')}/api/chat`, {
+      const res = await fetch('/api/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -194,6 +189,28 @@ export default function ChatDashboard({
       }
 
       const generatedAnswer = data.answer || '未取得有效回覆'
+      const generatedTitle =
+        isNewThread && typeof data.title === 'string' ? data.title.trim() : ''
+
+      // 僅在新討論串的第一輪使用 LLM 產生的標題
+      if (currentThreadId && generatedTitle) {
+        const { error: titleUpdateError } = await supabase
+          .from('threads')
+          .update({ title: generatedTitle })
+          .eq('id', currentThreadId)
+
+        if (titleUpdateError) {
+          console.error('更新 LLM 討論串名稱失敗:', titleUpdateError.message)
+        } else {
+          setThreads((prev) =>
+            prev.map((thread) =>
+              thread.id === currentThreadId
+                ? { ...thread, question: generatedTitle }
+                : thread
+            )
+          )
+        }
+      }
 
       // F. 將 AI 回覆寫入 chat_messages 資料表
       let assistantMsgId: string | undefined = undefined
@@ -321,7 +338,7 @@ export default function ChatDashboard({
         <header className="h-14 bg-white border-b border-slate-200 px-6 flex items-center justify-between shadow-sm">
           <div className="flex items-center gap-2 text-xs font-medium text-slate-700">
             <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse"></span>
-            <span>SOP 企業知識庫對話系統</span>
+            <span>SOP 兆豐SOP知識問答系統</span>
             {activeThreadId && (
               <span className="text-[11px] text-slate-400 bg-slate-100 px-2 py-0.5 rounded-full">
                 多輪討論串模式
@@ -329,7 +346,7 @@ export default function ChatDashboard({
             )}
           </div>
           <div className="flex items-center gap-3">
-            <span className="text-xs text-slate-400">兆豐證券資訊部助教</span>
+            <span className="text-xs text-slate-400">兆豐證券問答系統</span>
             <button
               type="button"
               onClick={toggleTheme}
@@ -352,7 +369,7 @@ export default function ChatDashboard({
               </div>
               <h2 className="text-xl font-bold text-slate-800">歡迎使用 SOP 智能知識庫</h2>
               <p className="mt-2 text-sm text-slate-500">
-                請在下方輸入問題，系統將自動為您開啟討論串並保留上下文記憶。
+                請在下方輸入問題...
               </p>
             </div>
           ) : (
@@ -390,7 +407,7 @@ export default function ChatDashboard({
                                     : 'bg-white text-slate-500 border-slate-200 hover:bg-slate-100'
                                 }`}
                               >
-                                <span>👍</span>
+
                                 <span>滿意</span>
                               </button>
 
@@ -402,7 +419,7 @@ export default function ChatDashboard({
                                     : 'bg-white text-slate-500 border-slate-200 hover:bg-slate-100'
                                 }`}
                               >
-                                <span>👎</span>
+                                
                                 <span>待改進</span>
                               </button>
                             </div>
@@ -423,7 +440,7 @@ export default function ChatDashboard({
               {isLoading && (
                 <div className="flex gap-3 items-center text-xs text-slate-400">
                   <div className="h-2 w-2 rounded-full bg-blue-600 animate-ping"></div>
-                  <span>正在接續上下文並思考回答中...</span>
+                  <span>正在思考回答中...</span>
                 </div>
               )}
 
