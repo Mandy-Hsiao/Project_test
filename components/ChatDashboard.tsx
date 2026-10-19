@@ -167,9 +167,15 @@ export default function ChatDashboard({
         role: m.role,
         content: m.content,
       }))
+      
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL
+
+        if (!apiUrl) {
+          throw new Error('尚未設定 NEXT_PUBLIC_API_URL')
+        }
 
       // E. 呼叫 /api/chat 取得 AI 回答
-      const res = await fetch('/api/chat', {
+      const res = await fetch(`${apiUrl.replace(/\/$/, '')}/api/chat`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -177,6 +183,10 @@ export default function ChatDashboard({
           history: contextHistory,
         }),
       })
+      if (!res.ok) {
+        const errorText = await res.text()
+        throw new Error(`API 呼叫失敗 (${res.status})：${errorText}`)
+      }
 
       const data = await res.json()
       if (!res.ok) {
