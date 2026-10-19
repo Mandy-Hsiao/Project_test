@@ -58,7 +58,11 @@ export default function AdminDashboardClient({
   const roleLabel = isAdmin ? '最高管理員' : isManager ? '部門主管' : '一般同仁'
 
   return (
-    <div className="min-h-screen bg-slate-900 text-slate-100 flex flex-col">
+    <div
+      className={`admin-dashboard min-h-screen bg-slate-900 text-slate-100 flex flex-col ${
+        isAdmin ? 'admin-dashboard-global' : ''
+      }`}
+    >
       {/* 頂部導航 */}
       <header className="h-14 border-b border-slate-800 bg-slate-950 px-6 flex items-center justify-between">
         <div className="flex items-center gap-2">

@@ -1,6 +1,6 @@
 'use client'
 
-import { createContext, useContext, useEffect, useState, type ReactNode } from 'react'
+import { createContext, useContext, useEffect, useRef, useState, type ReactNode } from 'react'
 
 type Theme = 'light' | 'dark'
 
@@ -11,15 +11,32 @@ interface ThemeContextValue {
 
 const ThemeContext = createContext<ThemeContextValue | null>(null)
 
-function getStoredTheme(): Theme {
-  if (typeof window === 'undefined') return 'light'
-  return window.localStorage.getItem('sop-theme') === 'dark' ? 'dark' : 'light'
-}
-
 export function ThemeProvider({ children }: { children: ReactNode }) {
-  const [theme, setTheme] = useState<Theme>(getStoredTheme)
+  const [theme, setTheme] = useState<Theme>('light')
+  const isInitialized = useRef(false)
 
   useEffect(() => {
+    let isMounted = true
+
+    queueMicrotask(() => {
+      if (!isMounted) return
+
+      const storedTheme = window.localStorage.getItem('sop-theme')
+      const initialTheme = storedTheme === 'dark' ? 'dark' : 'light'
+      document.documentElement.dataset.theme = initialTheme
+      window.localStorage.setItem('sop-theme', initialTheme)
+      setTheme(initialTheme)
+      isInitialized.current = true
+    })
+
+    return () => {
+      isMounted = false
+    }
+  }, [])
+
+  useEffect(() => {
+    if (!isInitialized.current) return
+
     document.documentElement.dataset.theme = theme
     window.localStorage.setItem('sop-theme', theme)
   }, [theme])

@@ -318,8 +318,18 @@ export default function ChatDashboard({
               </span>
             )}
           </div>
-          <div className="text-xs text-slate-400">
-            <span>兆豐證券資訊部助教</span>
+          <div className="flex items-center gap-3">
+            <span className="text-xs text-slate-400">兆豐證券資訊部助教</span>
+            <button
+              type="button"
+              onClick={toggleTheme}
+              suppressHydrationWarning
+              aria-label={`切換至${theme === 'light' ? '深色' : '淺色'}模式`}
+              title={theme === 'light' ? '切換至深色模式' : '切換至淺色模式'}
+              className={`theme-toggle-button ${theme === 'light' ? 'theme-toggle-light' : 'theme-toggle-dark'}`}
+            >
+              <span aria-hidden="true">{theme === 'light' ? '☾' : '☼'}</span>
+            </button>
           </div>
         </header>
 
@@ -444,16 +454,6 @@ export default function ChatDashboard({
                 發送
               </button>
             </div>
-            <button
-              type="button"
-              onClick={toggleTheme}
-              suppressHydrationWarning
-              aria-label={`切換至${theme === 'light' ? '深色' : '淺色'}模式`}
-              title={theme === 'light' ? '切換至深色模式' : '切換至淺色模式'}
-              className={`theme-toggle-button ${theme === 'light' ? 'theme-toggle-light' : 'theme-toggle-dark'}`}
-            >
-              <span aria-hidden="true">{theme === 'light' ? '☾' : '☼'}</span>
-            </button>
           </div>
         </div>
       </main>

@@ -81,7 +81,7 @@ export default function AdminUserManagement({
   })
 
   return (
-    <div className="space-y-6">
+    <div className="admin-user-management space-y-6">
       {/* 頂部說明與篩選列 */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-slate-950 p-4 rounded-xl border border-slate-800">
         <div>

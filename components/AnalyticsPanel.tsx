@@ -94,7 +94,7 @@ export default function AnalyticsPanel({
   const isPersonal = scope === 'personal'
 
   return (
-    <div className="space-y-6">
+    <div className="admin-analytics-panel space-y-6">
       {/* 核心指標：個人歷史不需要「活躍人數」與「平均每人提問」，這兩個指標只在部門/全域才有意義 */}
       <div className={`grid gap-4 ${isPersonal ? 'grid-cols-1 sm:w-64' : 'grid-cols-3'}`}>
         <MetricCard
@@ -189,7 +189,7 @@ function MetricCard({
   }
 
   return (
-    <div className="bg-slate-800/60 border border-slate-700 p-4 rounded-lg overflow-hidden relative">
+    <div className="admin-metric-card bg-slate-800/60 border border-slate-700 p-4 rounded-lg overflow-hidden relative">
       <div
         className={`absolute inset-0 bg-gradient-to-br ${colorMap[color]} opacity-5`}
       />

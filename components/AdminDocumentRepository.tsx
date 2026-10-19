@@ -148,7 +148,7 @@ export default function AdminDocumentRepository({ adminId }: AdminDocumentReposi
   })
 
   return (
-    <div className="space-y-6">
+    <div className="admin-document-repository space-y-6">
       {/* 頂部資訊看板與總覽統計 */}
       <div className="bg-slate-950 p-6 rounded-2xl border border-slate-800 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
@@ -299,7 +299,7 @@ export default function AdminDocumentRepository({ adminId }: AdminDocumentReposi
                         className={`text-[10px] px-2 py-0.5 rounded-full font-medium border transition hover:scale-105 active:scale-95 ${
                           doc.scope === 'public'
                             ? 'bg-blue-500/10 text-blue-300 border-blue-500/30 hover:bg-blue-500/20'
-                            : 'bg-purple-500/10 text-purple-300 border-purple-500/30 hover:bg-purple-500/20'
+                            : 'admin-scope-department bg-purple-500/10 text-purple-300 border-purple-500/30 hover:bg-purple-500/20'
                         }`}
                       >
                         {doc.scope === 'public' ? ' 全公司公開' : ' 僅限部門'} ⇄
