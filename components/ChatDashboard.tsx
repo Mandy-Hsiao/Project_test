@@ -338,7 +338,7 @@ export default function ChatDashboard({
         <header className="h-14 bg-white border-b border-slate-200 px-6 flex items-center justify-between shadow-sm">
           <div className="flex items-center gap-2 text-xs font-medium text-slate-700">
             <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse"></span>
-            <span>SOP 兆豐SOP知識問答系統</span>
+            <span>兆豐SOP知識問答系統</span>
             {activeThreadId && (
               <span className="text-[11px] text-slate-400 bg-slate-100 px-2 py-0.5 rounded-full">
                 多輪討論串模式

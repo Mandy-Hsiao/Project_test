@@ -1,10 +1,12 @@
 'use client'
 
 import React, { useState } from 'react'
+import { useRouter } from 'next/navigation'
 import AnalyticsPanel from '@/components/AnalyticsPanel'
 import AdminUserManagement from '@/components/AdminUserManagement'
 import ManagerReviewCenter from '@/components/ManagerReviewCenter'
 import AdminDocumentRepository from '@/components/AdminDocumentRepository'
+import { createClient } from '@/utils/supabase/client'
 import Link from 'next/link'
 
 interface AdminDashboardClientProps {
@@ -26,6 +28,9 @@ export default function AdminDashboardClient({
   employeeName = '',
   initialMembers = [],
 }: AdminDashboardClientProps) {
+  const router = useRouter()
+  const supabase = createClient()
+
   // 依身分決定預設呈現的分頁
   const [activeTab, setActiveTab] = useState<'global' | 'department' | 'personal' | 'users' | 'review'>(
     isAdmin ? 'global' : isManager ? 'department' : 'personal',
@@ -39,7 +44,7 @@ export default function AdminDashboardClient({
   }> = [
     { id: 'global', label: '全域數據', visible: isAdmin },
     { id: 'department', label: '部門分析', visible: isManager },
-    { id: 'personal', label: '個人歷史', visible: true },
+    { id: 'personal', label: '個人歷史', visible: !isAdmin },
     {
       id: 'users',
       label: isAdmin ? '全域用戶管理' : '部門同仁名單',
@@ -56,6 +61,17 @@ export default function AdminDashboardClient({
   const visibleTabs = tabs.filter((t) => t.visible)
 
   const roleLabel = isAdmin ? '最高管理員' : isManager ? '部門主管' : '一般同仁'
+
+  const handleSignOut = async () => {
+    const { error } = await supabase.auth.signOut()
+
+    if (error) {
+      console.error('[Admin] 登出失敗:', error.message)
+      return
+    }
+
+    router.push('/login')
+  }
 
   return (
     <div
@@ -82,12 +98,22 @@ export default function AdminDashboardClient({
         </div>
         <div className="flex items-center gap-3 text-xs">
           <span className="text-slate-400">{user.email}</span>
-          <Link
-            href="/"
-            className="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 rounded border border-slate-700 transition text-slate-200"
-          >
-            ← 返回對話
-          </Link>
+          {isAdmin ? (
+            <button
+              type="button"
+              onClick={handleSignOut}
+              className="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 rounded border border-slate-700 transition text-slate-200"
+            >
+              登出
+            </button>
+          ) : (
+            <Link
+              href="/"
+              className="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 rounded border border-slate-700 transition text-slate-200"
+            >
+              ← 返回對話
+            </Link>
+          )}
         </div>
       </header>
 

@@ -287,19 +287,21 @@ export default function Sidebar({
         )}
 
         {/* 2. 📤 上傳 SOP 文件按鈕（移至後台入口按鈕正下方） */}
-        {onOpenUploadModal && (
-      <button
-        onClick={onOpenUploadModal}
-        className="sidebar-action sidebar-upload-action w-full flex items-center justify-between rounded-lg px-3 py-2 text-xs bg-sky-500/20 hover:bg-sky-500/30 border border-sky-400/50 text-sky-200 transition shadow-sm"
->
-      <div className="flex items-center gap-2">
-        <span className="sidebar-action-icon text-base">📤</span>
-        <span className="sidebar-action-label text-xs font-medium text-sky-100">上傳 SOP 知識文件</span>
-      </div>
-      <span className="sidebar-action-badge text-[10px] px-2 py-0.5 rounded-md bg-sky-400 text-slate-900 font-bold">
-        Upload
-      </span>
-      </button>
+        {normalizedRole === 'user' && onOpenUploadModal && (
+          <button
+            onClick={onOpenUploadModal}
+            className="sidebar-action sidebar-upload-action w-full flex items-center justify-between rounded-lg px-3 py-2 text-xs bg-sky-500/20 hover:bg-sky-500/30 border border-sky-400/50 text-sky-200 transition shadow-sm"
+          >
+            <div className="flex items-center gap-2">
+              <span className="sidebar-action-icon text-base">📤</span>
+              <span className="sidebar-action-label text-xs font-medium text-sky-100">
+                上傳 SOP 知識文件
+              </span>
+            </div>
+            <span className="sidebar-action-badge text-[10px] px-2 py-0.5 rounded-md bg-sky-400 text-slate-900 font-bold">
+              Upload
+            </span>
+          </button>
         )}
 
         {/* 3. 使用者名牌與登出 */}

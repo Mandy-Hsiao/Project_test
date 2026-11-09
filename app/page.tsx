@@ -1,6 +1,7 @@
 import { createClient } from '@/utils/supabase/server'
 import { signout } from './login/actions'
 import ChatDashboard from '@/components/ChatDashboard'
+import { redirect } from 'next/navigation'
 
 export default async function HomePage() {
   const supabase = await createClient()
@@ -27,7 +28,13 @@ export default async function HomePage() {
     }
   }
 
-  // 1. 資安阻擋：已離職同仁不可存取系統
+  // 1. 管理員直接進入後台，與一般同仁的對話介面隔離
+  const isAdmin = userRole === 'admin'
+  if (isAdmin) {
+    redirect('/admin')
+  }
+
+  // 2. 資安阻擋：已離職同仁不可存取系統
   if (userRole === 'resigned') {
     return (
       <div className="flex h-screen w-screen flex-col items-center justify-center bg-slate-950 p-6 text-center text-slate-200">
@@ -53,14 +60,14 @@ export default async function HomePage() {
     )
   }
 
-  // 2. 正常同仁進入對話系統
+  // 3. 正常同仁進入對話系統
   return (
     <ChatDashboard
       userEmail={user?.email}
       userId={user?.id}
       userRole={userRole}
       department={department}
-      isAdmin={userRole === 'admin'}
+      isAdmin={isAdmin}
       onSignOut={signout}
     />
   )
